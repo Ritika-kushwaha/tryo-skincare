@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tryo | Clinically Proven Indian Organic Skincare & Haircare</title>
+  
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="Explore Tryo: Premium organic, clinically-proven skincare and haircare. Try our 1-week mini product testers, build 5-item custom combos with heavy discounts, and test weekly improvements with our camera skin scanner.">
+  <meta name="keywords" content="skincare, haircare, organic, biodegradable, clinically tested, indian botanicals, skin camera scanner, trial minis, combo discount, Tryo">
+  
+  <!-- Elegant & Mature Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400..700;1,400..700&family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+  
+  <!-- CSS Stylesheet -->
+  <link rel="stylesheet" href="styles.css">
+  
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+  <!-- Background Decorative Light Shadows -->
+  <div class="decor-light-shadow shadow-1"></div>
+  <div class="decor-light-shadow shadow-2"></div>
+
+  <!-- Header Section -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="logo-area" onclick="navigateTo('home')">
+        <div class="logo-sparkle"><i data-lucide="sparkles"></i></div>
+        <span class="logo-text">Tryo</span>
+      </div>
+      
+      <nav class="nav-links">
+        <a href="#home" class="nav-item active" onclick="navigateTo('home'); return false;"><i data-lucide="home"></i> Home</a>
+        <a href="#shop" class="nav-item" onclick="navigateTo('shop'); return false;"><i data-lucide="shopping-bag"></i> Shop</a>
+        <a href="#combo" class="nav-item" onclick="navigateTo('combo'); return false;"><i data-lucide="gift"></i> Combo Builder</a>
+        <a href="#scanner" class="nav-itemHighlight" onclick="navigateTo('scanner'); return false;"><i data-lucide="aperture"></i> Skin Scanner</a>
+      </nav>
+
+      <div class="header-actions">
+        <button class="action-btn" onclick="navigateTo('wishlist')" title="Wishlist">
+          <i data-lucide="heart"></i>
+          <span class="badge" id="wishlist-badge">0</span>
+        </button>
+        <button class="action-btn" onclick="navigateTo('cart')" title="Shopping Cart">
+          <i data-lucide="shopping-cart"></i>
+          <span class="badge" id="cart-badge">0</span>
+        </button>
+        <button class="action-btn user-profile-btn" onclick="openProfileOrLogin()" title="User Profile">
+          <i data-lucide="user"></i>
+          <span id="user-display-name">Login</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main View Containers -->
+  <main class="main-content">
+    
+    <!-- HOME VIEW -->
+    <section id="home-view" class="view-panel active">
+      <div class="hero-section">
+        <div class="hero-text-content">
+          <span class="hero-tag">Organic Indian Botanicals &bull; Clinically Proven 🌿</span>
+          <h1 class="hero-title">Scientific Beauty,<br><span class="highlight">Glow-up Redefined</span></h1>
+          <p class="hero-desc">Tryo blends ancient Indian herbs with dermatological science. 100% biodegradable packaging, owner-tested daily, and completely safe. Order our affordable 1-week mini trial packs to find your perfect fit.</p>
+          <div class="hero-buttons">
+            <button class="btn btn-primary" onclick="navigateTo('shop')">Explore Shop <i data-lucide="arrow-right"></i></button>
+            <button class="btn btn-secondary" onclick="navigateTo('scanner')">Scan Face & Hair <i data-lucide="camera"></i></button>
+          </div>
+        </div>
+        <div class="hero-image-wrapper">
+          <img src="assets/hero_banner.jpg" alt="Organic Skincare Bottles surrounded by pink petals" class="hero-img">
+          <div class="floating-badge badge-organic">
+            <i data-lucide="leaf"></i>
+            <span>Pure Organic</span>
+          </div>
+          <div class="floating-badge badge-tested">
+            <i data-lucide="shield-check"></i>
+            <span>Clinical Active</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Brand Pillars -->
+      <div class="brand-pillars">
+        <div class="pillar-card">
+          <div class="pillar-icon"><i data-lucide="leaf"></i></div>
+          <h3>Organic Indian Herbs</h3>
+          <p>Potent extracts of Saffron, Neem, Amla, and Bhringraj that nourish your skin and scalp naturally.</p>
+        </div>
+        <div class="pillar-card">
+          <div class="pillar-icon"><i data-lucide="recycle"></i></div>
+          <h3>Zero-Waste Packaging</h3>
+          <p>Sugarcane cosmetic tubes, soy-ink labels, and paper pulp shipping boxes that naturally biodegrade.</p>
+        </div>
+        <div class="pillar-card">
+          <div class="pillar-icon"><i data-lucide="check-square"></i></div>
+          <h3>Owner & Clinical Certified</h3>
+          <p>Independently tested by labs and personally verified by our founder for active, visible results.</p>
+        </div>
+      </div>
+
+      <!-- Interactive Mini Trial Callout -->
+      <div class="mini-trial-callout">
+        <div class="trial-text">
+          <h2>Test Before You Commit 🧪</h2>
+          <p>To avoid wastage and ensure compatibility, try our affordable 1-week **Mini Trial Versions**. Perfect for testing clinical skin tolerance.</p>
+          <div class="trial-highlight">
+            <i data-lucide="gift"></i>
+            <span>Build a custom Combo Pack of any 5 Minis (20% off) or 5 Full-Size items (15% off)!</span>
+          </div>
+          <button class="btn btn-primary" onclick="navigateTo('combo')">Build Custom Combo</button>
+        </div>
+        <div class="trial-visual">
+          <div class="mini-product-cluster">
+            <div class="mini-prod-card m1">✨ Saffron Serum Mini</div>
+            <div class="mini-prod-card m2">🌸 Sandalwood Mist Mini</div>
+            <div class="mini-prod-card m3">🧴 Aloe SPF Mini</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SHOP VIEW -->
+    <section id="shop-view" class="view-panel">
+      <div class="section-header">
+        <h2>Dermatology & Botanicals Collection</h2>
+        <p>Eco-friendly, budget-friendly, clinically active, and organic.</p>
+      </div>
+      
+      <!-- Filters and Category Toggles -->
+      <div class="shop-filter-bar">
+        <div class="category-toggles">
+          <button class="filter-btn active" onclick="filterCategory('all', this)">All Products</button>
+          <button class="filter-btn" onclick="filterCategory('skincare', this)">Skincare 🧴</button>
+          <button class="filter-btn" onclick="filterCategory('haircare', this)">Haircare 💇‍♀️</button>
+        </div>
+        <div class="size-toggles">
+          <span>Show Size:</span>
+          <select id="size-filter-select" onchange="applyFilters()">
+            <option value="all">All Sizes</option>
+            <option value="full">Full Version Only</option>
+            <option value="mini">Mini Version (1-Week Trial)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Products Grid -->
+      <div class="products-grid" id="products-container">
+        <!-- Javascript will populate products here dynamically -->
+      </div>
+    </section>
+
+    <!-- COMBO BUILDER VIEW -->
+    <section id="combo-view" class="view-panel">
+      <div class="section-header">
+        <h2>Custom Combo Box Builder 🎁</h2>
+        <p>Choose <strong>any 5 products</strong> in Mini or Full-size version to unlock special discount rates!</p>
+        <div class="combo-rules-alert">
+          <div><i data-lucide="percent"></i> <strong>Combo Box Deals:</strong></div>
+          <ul>
+            <li>Buy any 5 Minis: <strong>20% OFF</strong> total price</li>
+            <li>Buy any 5 Full-Size: <strong>15% OFF</strong> total price</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="combo-builder-container">
+        <!-- Builder Left: Product Catalog Selection -->
+        <div class="builder-catalog">
+          <h3>1. Choose 5 Products to Pack</h3>
+          
+          <div class="builder-size-selector">
+            <button class="size-select-btn active" id="btn-select-mini" onclick="setBuilderVersion('mini')">Build Mini Trial Box (20% off)</button>
+            <button class="size-select-btn" id="btn-select-full" onclick="setBuilderVersion('full')">Build Full-Size Glow Box (15% off)</button>
+          </div>
+
+          <div class="builder-products-grid" id="builder-products-container">
+            <!-- Javascript will inject products for matching version -->
+          </div>
+        </div>
+
+        <!-- Builder Right: Box Preview and Checkout -->
+        <div class="builder-box-preview">
+          <h3>2. Your Combo Pack Box</h3>
+          <div class="box-slots" id="combo-slots">
+            <!-- 5 Slots populated here -->
+          </div>
+          
+          <div class="box-summary-card">
+            <div class="summary-row">
+              <span>Selected Items:</span>
+              <span id="combo-count-label">0 / 5</span>
+            </div>
+            <div class="summary-row">
+              <span>Subtotal:</span>
+              <span id="combo-subtotal">₹0</span>
+            </div>
+            <div class="summary-row discount-row" id="combo-discount-row">
+              <span>Combo Discount Applied:</span>
+              <span id="combo-discount">-₹0</span>
+            </div>
+            <hr>
+            <div class="summary-row total-row">
+              <span>Combo Box Price:</span>
+              <span id="combo-total">₹0</span>
+            </div>
+
+            <button class="btn btn-primary btn-block" id="btn-add-combo-to-cart" disabled onclick="addComboToCart()">
+              <i data-lucide="shopping-cart"></i> Add Combo Pack to Cart
+            </button>
+            <p class="combo-tip" id="combo-tip-msg">Add 5 items to unlock the combo deal!</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CAMERA SCANNER VIEW -->
+    <section id="scanner-view" class="view-panel">
+      <div class="section-header">
+        <h2>Weekly Skincare & Haircare Scanner 📸</h2>
+        <p>Scan your skin or hair to track organic bio-transformation effects and clinical progression week-by-week!</p>
+      </div>
+
+      <div class="scanner-grid">
+        <!-- Left Pane: Camera Stream & Mock Scanner -->
+        <div class="scanner-stream-container">
+          <div class="scanner-mode-tabs">
+            <button class="scan-mode-btn active" id="btn-scan-face" onclick="setScanMode('face')">🌸 Face Scan</button>
+            <button class="scan-mode-btn" id="btn-scan-hair" onclick="setScanMode('hair')">💇‍♀️ Hair Scan</button>
+          </div>
+
+          <div class="camera-viewport-wrapper">
+            <video id="webcam-video" autoplay playsinline class="hidden"></video>
+            <div id="camera-fallback" class="fallback-graphic">
+              <!-- Background image of face or hair, with loading overlay -->
+              <img id="fallback-img" src="assets/scan_face.jpg" alt="Scanning Face Target">
+              <div class="fallback-glow"></div>
+            </div>
+            
+            <div class="scanner-overlay" id="scanner-line-overlay">
+              <div class="scanner-laser"></div>
+              <div class="scan-hud">
+                <span class="hud-item hud-top-left">SYS_OK</span>
+                <span class="hud-item hud-top-right">BIO_MATCH</span>
+                <span class="hud-item hud-bottom-left" id="hud-mode-text">MODE: FACE</span>
+                <span class="hud-item hud-bottom-right" id="hud-status-text">READY</span>
+              </div>
+            </div>
+
+            <div class="scan-processing-overlay hidden" id="scan-progress-box">
+              <div class="cute-spinner"></div>
+              <h3>Analyzing Biomarkers...</h3>
+              <p id="analysis-step-text">Calibrating pigments...</p>
+            </div>
+          </div>
+
+          <div class="camera-actions">
+            <button class="btn btn-primary" id="btn-start-scan" onclick="triggerScanningSequence()">
+              <i data-lucide="scan"></i> Start Deep Scan
+            </button>
+            <button class="btn btn-secondary" id="btn-toggle-camera-source" onclick="toggleRealCamera()">
+              <i data-lucide="video"></i> Use Real Webcam
+            </button>
+          </div>
+        </div>
+
+        <!-- Right Pane: Analysis Results & Week Evolution Slider -->
+        <div class="scanner-results-container">
+          <div class="card result-card empty-result-card" id="scanner-empty-state">
+            <div class="empty-icon"><i data-lucide="shield-alert"></i></div>
+            <h3>No Scan Data Available</h3>
+            <p>Please launch a deep scan of your face or hair to initialize the weekly bio-tracking simulator and view organic treatment recommendations.</p>
+          </div>
+
+          <div class="card result-card hidden" id="scanner-results-box">
+            <div class="badge-pill bg-success-soft"><i data-lucide="sparkle"></i> Analysis Completed</div>
+            <h3 id="result-title">Face Scan Results</h3>
+            
+            <!-- Week Evolution Visual Simulator Slider -->
+            <div class="week-slider-wrapper">
+              <label for="week-range-slider"><strong>Select Treatment Progression Week:</strong></label>
+              <div class="week-slider-control">
+                <input type="range" id="week-range-slider" min="1" max="4" value="1" step="1" oninput="changeEvolutionWeek(this.value)">
+                <div class="week-markers">
+                  <span>W1 (Start)</span>
+                  <span>W2 (Active)</span>
+                  <span>W3 (Healing)</span>
+                  <span>W4 (Glow)</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Before/After Split Interactive Comparison Frame -->
+            <div class="evolution-display-frame">
+              <div class="evolution-img-container">
+                <img id="evolution-img" src="assets/scan_face.jpg" alt="Evolution Stage">
+                <!-- Apply direct CSS filters based on week number -->
+                <div class="evolution-glow-effect" id="evolution-glow"></div>
+              </div>
+              <div class="week-badge-overlay">Week <span id="week-badge-text">1</span></div>
+            </div>
+
+            <!-- Health Remarks Panel -->
+            <div class="remarks-box">
+              <h4>Clinical Remarks & Biome Status:</h4>
+              <p class="remark-text" id="remark-text-content">Week 1: Acne inflammation active. Moisture index 42% (Dry). Skin barrier slightly compromised. Recommended: Saffron Glow Face Serum + Sandalwood Hydrating Mist.</p>
+              
+              <div class="biome-stats-grid">
+                <div class="biome-stat">
+                  <span class="stat-name">Moisture Index</span>
+                  <div class="stat-bar-bg"><div class="stat-bar" id="stat-moisture" style="width: 42%;"></div></div>
+                  <span class="stat-val" id="val-moisture">42%</span>
+                </div>
+                <div class="biome-stat">
+                  <span class="stat-name">Redness/Frizz</span>
+                  <div class="stat-bar-bg"><div class="stat-bar warning" id="stat-redness" style="width: 78%;"></div></div>
+                  <span class="stat-val" id="val-redness">78%</span>
+                </div>
+                <div class="biome-stat">
+                  <span class="stat-name">Skin/Hair Elasticity</span>
+                  <div class="stat-bar-bg"><div class="stat-bar success" id="stat-elasticity" style="width: 55%;"></div></div>
+                  <span class="stat-val" id="val-elasticity">55%</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Organic Recommendations -->
+            <div class="recommendations-box">
+              <h4>Recommended Weekly Routine:</h4>
+              <div class="rec-products" id="rec-products-container">
+                <!-- Javascript will load products dynamically -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- WISHLIST VIEW -->
+    <section id="wishlist-view" class="view-panel">
+      <div class="section-header">
+        <h2>My Wishlist <i data-lucide="heart" class="rose-heart"></i></h2>
+        <p>Save your favorite organic skincare & haircare items here. Move them to your cart anytime!</p>
+      </div>
+
+      <div class="wishlist-container" id="wishlist-items-container">
+        <!-- Javascript will inject list of wishlist items or show empty state -->
+      </div>
+    </section>
+
+    <!-- CART VIEW -->
+    <section id="cart-view" class="view-panel">
+      <div class="section-header">
+        <h2>Shopping Cart <i data-lucide="shopping-cart"></i></h2>
+        <p>Every purchase supports sustainable organic farming. Clinically tested & cruelty-free.</p>
+      </div>
+
+      <div class="cart-grid">
+        <!-- Cart Items List -->
+        <div class="cart-items-panel" id="cart-items-container">
+          <!-- Dynamically populated -->
+        </div>
+
+        <!-- Cart Summary Card -->
+        <div class="cart-summary-panel">
+          <div class="card summary-card">
+            <h3>Order Summary</h3>
+            <div class="summary-details">
+              <div class="summary-row">
+                <span>Subtotal:</span>
+                <span id="cart-subtotal">₹0</span>
+              </div>
+              <div class="summary-row discount-row" id="cart-combo-discount-row">
+                <span>Combo Bundle Discount:</span>
+                <span id="cart-combo-discount">-₹0</span>
+              </div>
+              <div class="summary-row">
+                <span>Eco Shipping (Biodegradable Box):</span>
+                <span class="green-text">FREE</span>
+              </div>
+              <hr>
+              <div class="summary-row total-row">
+                <span>Total Amount:</span>
+                <span id="cart-total">₹0</span>
+              </div>
+            </div>
+
+            <button class="btn btn-primary btn-block btn-lg" onclick="checkoutCart()">
+              <i data-lucide="credit-card"></i> Proceed to Pay
+            </button>
+            <button class="btn btn-secondary btn-block btn-sm" onclick="navigateTo('shop')">
+              <i data-lucide="arrow-left"></i> Continue Shopping
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CHECKOUT VIEW -->
+    <section id="checkout-view" class="view-panel">
+      <div class="section-header">
+        <h2>Secure Payment Window 💳</h2>
+        <p>Enter your details below to finalize your organic beauty order. Real authorization will be simulated.</p>
+      </div>
+
+      <div class="checkout-form-container">
+        <div class="checkout-split">
+          <!-- Left: Checkout Inputs -->
+          <div class="card checkout-card">
+            <h3>Shipping & Payment Details</h3>
+            <form id="payment-form" onsubmit="processPayment(event)">
+              <div class="form-group">
+                <label for="shipping-name">Full Name</label>
+                <input type="text" id="shipping-name" placeholder="E.g., Ritika Sen" required>
+              </div>
+              <div class="form-group">
+                <label for="shipping-address">Shipping Address</label>
+                <input type="text" id="shipping-address" placeholder="123 Blossom Lane, Garden City" required>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label for="shipping-city">City</label>
+                  <input type="text" id="shipping-city" placeholder="Mumbai" required>
+                </div>
+                <div class="form-group">
+                  <label for="shipping-zip">Zip/Pin Code</label>
+                  <input type="text" id="shipping-zip" placeholder="400001" required>
+                </div>
+              </div>
+
+              <div class="payment-card-inputs">
+                <h4>Payment Method: Credit / Debit Card</h4>
+                <div class="form-group">
+                  <label for="card-number">Card Number</label>
+                  <div class="input-icon-wrapper">
+                    <i data-lucide="credit-card"></i>
+                    <input type="text" id="card-number" placeholder="4111 2222 3333 4444" pattern="\d{4}\s?\d{4}\s?\d{4}\s?\d{4}" maxlength="19" required>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="card-expiry">Expiry Date</label>
+                    <input type="text" id="card-expiry" placeholder="MM/YY" pattern="\d{2}/\d{2}" maxlength="5" required>
+                  </div>
+                  <div class="form-group">
+                    <label for="card-cvv">CVV</label>
+                    <input type="password" id="card-cvv" placeholder="123" pattern="\d{3}" maxlength="3" required>
+                  </div>
+                </div>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-block btn-lg" id="btn-pay-now">
+                <i data-lucide="sparkles"></i> Authorize & Pay ₹<span id="checkout-pay-total">0</span>
+              </button>
+            </form>
+          </div>
+
+          <!-- Right: Checkout Receipt Summary -->
+          <div class="card checkout-summary-card">
+            <h3>Your Order Basket</h3>
+            <div id="checkout-basket-items">
+              <!-- Dynamically populated list of items -->
+            </div>
+            <hr>
+            <div class="checkout-billing-list">
+              <div class="billing-row">
+                <span>Subtotal:</span>
+                <span id="checkout-subtotal">₹0</span>
+              </div>
+              <div class="billing-row discount-row" id="checkout-discount-row">
+                <span>Combo Discount:</span>
+                <span id="checkout-discount">-₹0</span>
+              </div>
+              <div class="billing-row total-row">
+                <span>Total Charge:</span>
+                <span id="checkout-total">₹0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Payment Loading overlay -->
+      <div class="payment-processing-overlay hidden" id="payment-loading-screen">
+        <div class="bubble-container-anim">
+          <div class="anim-bubble b1"></div>
+          <div class="anim-bubble b2"></div>
+          <div class="anim-bubble b3"></div>
+        </div>
+        <h2>Processing Secure Payment...</h2>
+        <p>Connecting to secure payment gateway. Please do not close this window.</p>
+        <span class="clinical-fact-tip">Did you know? Our packaging biodegrades in compost within 90 days! 🌎</span>
+      </div>
+
+      <!-- Success Receipt Screen -->
+      <div class="payment-success-screen hidden" id="payment-success-screen">
+        <div class="success-heart-icon"><i data-lucide="check-circle-2"></i></div>
+        <h2>Payment Successful! 🎉</h2>
+        <p>Thank you for choosing Tryo! Your order has been placed successfully.</p>
+        <div class="receipt-card" id="receipt-bill-box">
+          <!-- Populated by JavaScript -->
+        </div>
+        <button class="btn btn-primary" onclick="navigateTo('home')">Return Home</button>
+        <button class="btn btn-secondary" onclick="navigateTo('history')">View Purchase History</button>
+      </div>
+    </section>
+
+    <!-- PROFILE & PURCHASE HISTORY VIEW -->
+    <section id="history-view" class="view-panel">
+      <div class="profile-header-card">
+        <div class="profile-avatar"><i data-lucide="user"></i></div>
+        <div class="profile-info">
+          <h2 id="profile-user-name">Guest User</h2>
+          <p id="profile-user-email">Sign in to save purchase logs forever!</p>
+          <button class="btn btn-secondary btn-sm" onclick="userLogout()">Log Out</button>
+        </div>
+      </div>
+
+      <div class="profile-tabs-content">
+        <div class="history-section">
+          <h3>Purchase History & Invoices</h3>
+          <div class="history-list" id="purchase-history-list">
+            <!-- Dynamically loaded list of past orders -->
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- PRODUCT DETAILS & REVIEWS MODAL -->
+  <div class="modal-backdrop hidden" id="product-detail-modal">
+    <div class="modal-card detail-modal-card">
+      <button class="close-modal-btn" onclick="closeProductDetailModal()"><i data-lucide="x"></i></button>
+      
+      <div class="detail-modal-layout">
+        <!-- Left Pane: Product Image & Average Star Rating -->
+        <div class="detail-left-pane">
+          <img id="detail-modal-img" src="" alt="Product Photo">
+          <div class="rating-summary">
+            <span class="avg-stars" id="detail-modal-stars">★★★★★</span>
+            <span class="rating-text" id="detail-modal-rating-count">4.8 (24 reviews)</span>
+          </div>
+        </div>
+
+        <!-- Right Pane: Product Details, Expandable Tabs, and Reviews -->
+        <div class="detail-right-pane">
+          <h2 id="detail-modal-title">Product Title</h2>
+          <span class="cat-badge" id="detail-modal-category">SKINCARE</span>
+          <p class="detail-desc" id="detail-modal-desc">Description text</p>
+          
+          <div class="detail-tabs">
+            <button class="detail-tab-btn active" id="btn-tab-ingredients" onclick="switchDetailTab('ingredients')">Ingredients</button>
+            <button class="detail-tab-btn" id="btn-tab-instructions" onclick="switchDetailTab('instructions')">How to Use</button>
+            <button class="detail-tab-btn" id="btn-tab-benefits" onclick="switchDetailTab('benefits')">Benefits</button>
+          </div>
+          
+          <div class="detail-tab-content-box">
+            <p id="detail-tab-content">Ingredients content...</p>
+          </div>
+
+          <!-- Customer Reviews List -->
+          <div class="detail-reviews-section">
+            <h3>Customer Reviews</h3>
+            <div class="reviews-list" id="detail-modal-reviews-list">
+              <!-- JS will inject actual customer reviews -->
+            </div>
+
+            <!-- Write a Review Form -->
+            <div class="write-review-area">
+              <h3>Share Your Feedback</h3>
+              <form id="write-review-form" onsubmit="submitProductReview(event)">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="review-username">Your Name</label>
+                    <input type="text" id="review-username" placeholder="E.g., Ritika" required>
+                  </div>
+                  <div class="form-group">
+                    <label>Rating</label>
+                    <div class="interactive-stars" id="review-rating-stars">
+                      <span class="star-interactive" data-star="1" onclick="setWriteReviewRating(1)">★</span>
+                      <span class="star-interactive" data-star="2" onclick="setWriteReviewRating(2)">★</span>
+                      <span class="star-interactive" data-star="3" onclick="setWriteReviewRating(3)">★</span>
+                      <span class="star-interactive" data-star="4" onclick="setWriteReviewRating(4)">★</span>
+                      <span class="star-interactive" data-star="5" onclick="setWriteReviewRating(5)">★</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label for="review-comment">Your Review</label>
+                  <textarea id="review-comment" placeholder="What did you love about this organic formula?" rows="2" required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary btn-sm">Submit Review</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AUTHENTICATION MODAL -->
+  <div class="modal-backdrop hidden" id="auth-modal">
+    <div class="modal-card">
+      <button class="close-modal-btn" onclick="closeAuthModal()"><i data-lucide="x"></i></button>
+      
+      <div class="modal-tabs">
+        <button class="modal-tab active" id="tab-login" onclick="switchAuthTab('login')">Log In</button>
+        <button class="modal-tab" id="tab-signup" onclick="switchAuthTab('signup')">Sign Up</button>
+      </div>
+
+      <!-- Login Form -->
+      <form id="login-form" class="auth-form" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label for="login-email">Email Address</label>
+          <input type="email" id="login-email" placeholder="hello@tryo.com" required>
+        </div>
+        <div class="form-group">
+          <label for="login-password">Password</label>
+          <input type="password" id="login-password" placeholder="••••••••" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Enter Tryo ✨</button>
+      </form>
+
+      <!-- Signup Form -->
+      <form id="signup-form" class="auth-form hidden" onsubmit="handleSignup(event)">
+        <div class="form-group">
+          <label for="signup-name">Your Full Name</label>
+          <input type="text" id="signup-name" placeholder="Ritika Sen" required>
+        </div>
+        <div class="form-group">
+          <label for="signup-email">Email Address</label>
+          <input type="email" id="signup-email" placeholder="yourname@tryo.com" required>
+        </div>
+        <div class="form-group">
+          <label for="signup-password">Password</label>
+          <input type="password" id="signup-password" placeholder="Min. 6 characters" minlength="6" required>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Create Account 🌸</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Footer Section -->
+  <footer class="app-footer-bar">
+    <div class="footer-container">
+      <div class="footer-brand">
+        <h3>Tryo</h3>
+        <p>Combining clinically verified dermaceutics with traditional organic Indian wellness. Completely biodegradable packaging, clinically tested and safe.</p>
+      </div>
+      <div class="footer-links">
+        <h4>Discover</h4>
+        <a href="#home" onclick="navigateTo('home')">Home</a>
+        <a href="#shop" onclick="navigateTo('shop')">Shop</a>
+        <a href="#combo" onclick="navigateTo('combo')">Combo Box</a>
+        <a href="#scanner" onclick="navigateTo('scanner')">Skin Scanner</a>
+      </div>
+      <div class="footer-creds">
+        <p>&copy; 2026 Tryo Wellness Ltd. All packaging sugarcane-derived. Clinically and founder tested.</p>
+        <span class="heart-text">Crafted with care for your cellular health</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Core Javascript Logic -->
+  <script src="app.js"></script>
+</body>
+</html>

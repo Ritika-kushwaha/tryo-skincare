@@ -1293,13 +1293,15 @@ function processPayment(e) {
       status: activePaymentMethod === 'cod' ? 'Pending (COD)' : 'Paid'
     };
 
-    // Save to cloud (Firebase) + localStorage — visible across ALL devices
+    // Save to local state FIRST so the UI updates instantly
+    state.orders.unshift(orderData);
+    saveStateToLocalStorage();
+
+    // Save to cloud API — visible across ALL devices
     if (typeof cloudSaveOrder === 'function') {
       cloudSaveOrder(orderData);
-    } else {
-      state.orders.unshift(orderData);
-      localStorage.setItem('tryo_orders', JSON.stringify(state.orders));
     }
+    localStorage.setItem('tryo_orders', JSON.stringify(state.orders));
 
     state.cart = [];
     saveStateToLocalStorage();
@@ -1589,9 +1591,9 @@ function renderHistory() {
       });
       saveStateToLocalStorage();
 
-      // 2. Filter for display based on email
+      // 2. Filter for display based on email (allow older orders without email so they aren't lost)
       const userEmail = state.currentUser.email;
-      const displayOrders = allCloudOrders.filter(o => o.customerEmail === userEmail);
+      const displayOrders = allCloudOrders.filter(o => o.customerEmail === userEmail || !o.customerEmail);
       
       renderHistoryList(displayOrders, list);
     });

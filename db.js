@@ -5,8 +5,7 @@
    ========================================== */
 
 // Unique database ID created for Tryo Orders
-const DB_ID = 'ff808181a067127101a096cb54e70369';
-const API_URL = `https://api.restful-api.dev/objects/${DB_ID}`;
+const API_URL = `/api/orders`;
 
 // Keep track of the current polling interval for live updates
 let liveUpdateInterval = null;
@@ -19,22 +18,13 @@ function cloudSaveOrder(orderData) {
   localStorage.setItem('tryo_orders', JSON.stringify(local));
 
   // 2. Push to cloud
-  fetch(API_URL)
-    .then(res => res.json())
-    .then(data => {
-      const cloudOrders = (data && data.data && data.data.orders) ? data.data.orders : [];
-      // Add the new order to the front
-      cloudOrders.unshift(orderData);
-
-      // Send updated list back to cloud
-      return fetch(API_URL, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: 'TryoDB', data: { orders: cloudOrders } })
-      });
-    })
-    .then(() => console.log('[Tryo DB] Order saved to cloud:', orderData.orderId))
-    .catch(err => console.error('[Tryo DB] Cloud save failed:', err));
+  fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(orderData)
+  })
+  .then(() => console.log('[Tryo DB] Order saved to cloud:', orderData.orderId))
+  .catch(err => console.error('[Tryo DB] Cloud save failed:', err));
 }
 
 // ——— LOAD ALL ORDERS (cloud + merge local) ———
@@ -42,7 +32,7 @@ function cloudLoadOrders(callback) {
   fetch(API_URL)
     .then(res => res.json())
     .then(data => {
-      const cloudOrders = (data && data.data && data.data.orders) ? data.data.orders : [];
+      const cloudOrders = data.orders || [];
       localStorage.setItem('tryo_orders', JSON.stringify(cloudOrders));
       callback(cloudOrders);
     })
@@ -67,7 +57,7 @@ function cloudUpdateOrder(orderId, updatedFields, callback) {
   fetch(API_URL)
     .then(res => res.json())
     .then(data => {
-      const cloudOrders = (data && data.data && data.data.orders) ? data.data.orders : [];
+      const cloudOrders = data.orders || [];
       const cloudIdx = cloudOrders.findIndex(o => o.orderId === orderId);
       
       if (cloudIdx > -1) {
@@ -76,7 +66,7 @@ function cloudUpdateOrder(orderId, updatedFields, callback) {
         return fetch(API_URL, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: 'TryoDB', data: { orders: cloudOrders } })
+          body: JSON.stringify({ orders: cloudOrders })
         }).then(() => {
           console.log('[Tryo DB] Order updated in cloud:', orderId);
           if (callback) callback(true);
@@ -105,7 +95,7 @@ function cloudListenOrders(callback) {
     fetch(API_URL)
       .then(res => res.json())
       .then(data => {
-        const cloudOrders = (data && data.data && data.data.orders) ? data.data.orders : [];
+        const cloudOrders = data.orders || [];
         // Only update local and trigger callback if data changed
         const currentLocal = localStorage.getItem('tryo_orders');
         const newCloudStr = JSON.stringify(cloudOrders);

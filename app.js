@@ -270,6 +270,9 @@ function showCartAddSuccessToast(itemName) {
 
 // 3. APP INITIALIZATION
 document.addEventListener('DOMContentLoaded', () => {
+  // Initialize cloud DB (Firebase) if configured
+  if (typeof initDB === 'function') initDB();
+
   loadStateFromLocalStorage();
   renderProducts();
   renderComboCatalog();
@@ -1218,13 +1221,23 @@ function processPayment(e) {
     const orderData = {
       orderId: 'TR-' + Math.floor(100000 + Math.random() * 900000),
       date: new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }),
+      timestamp: Date.now(),
       paymentMethod: activePaymentMethod === 'card' ? '💳 Card' : activePaymentMethod === 'upi' ? '📱 UPI' : '🏠 Cash on Delivery',
+      customerName: document.getElementById('shipping-name').value.trim(),
+      address: `${document.getElementById('shipping-address').value.trim()}, ${document.getElementById('shipping-city').value.trim()} - ${document.getElementById('shipping-zip').value.trim()}`,
       items: state.cart.map(item => ({ name: item.name, quantity: item.quantity, size: item.size, price: item.price })),
       total: state.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
       status: activePaymentMethod === 'cod' ? 'Pending (COD)' : 'Paid'
     };
 
-    state.orders.unshift(orderData);
+    // Save to cloud (Firebase) + localStorage — visible across ALL devices
+    if (typeof cloudSaveOrder === 'function') {
+      cloudSaveOrder(orderData);
+    } else {
+      state.orders.unshift(orderData);
+      localStorage.setItem('tryo_orders', JSON.stringify(state.orders));
+    }
+
     state.cart = [];
     saveStateToLocalStorage();
     updateHeaderBadges();
@@ -1235,6 +1248,7 @@ function processPayment(e) {
 }
 
 function renderSuccessReceipt() {
+
   const box = document.getElementById('receipt-bill-box');
   if (!box) return;
 

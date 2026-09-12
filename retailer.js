@@ -31,17 +31,35 @@ function portalLogout() {
   document.getElementById('portal-pin').value = '';
 }
 
-// ——— LOAD DATA FROM SHARED LOCALSTORAGE ———
+// ——— LOAD DATA — REAL-TIME FROM FIREBASE ———
 function loadPortalData() {
-  try {
-    const raw = localStorage.getItem('tryo_orders');
-    allOrders = raw ? JSON.parse(raw) : [];
-  } catch (e) {
-    allOrders = [];
-  }
+  // Initialize Firebase if not yet done
+  if (typeof initDB === 'function') initDB();
 
-  updateStats();
-  renderOrders();
+  // Show a loading indicator
+  document.getElementById('orders-container').innerHTML = `
+    <div class="empty-orders">
+      <div style="font-size:36px;">⏳</div>
+      <h3>Loading Orders...</h3>
+      <p>Fetching live orders from cloud database.</p>
+    </div>
+  `;
+
+  // Use real-time listener if Firebase is ready, otherwise local
+  if (typeof cloudListenOrders === 'function') {
+    cloudListenOrders(orders => {
+      allOrders = orders;
+      updateStats();
+      renderOrders();
+    });
+  } else {
+    // Fallback to localStorage
+    try {
+      allOrders = JSON.parse(localStorage.getItem('tryo_orders') || '[]');
+    } catch (e) { allOrders = []; }
+    updateStats();
+    renderOrders();
+  }
 }
 
 // ——— SAVE BACK TO LOCALSTORAGE ———
@@ -203,21 +221,35 @@ function saveOrderEdit() {
 
   const order = allOrders[editingOrderIndex];
 
-  order.status          = document.getElementById('edit-status').value;
-  order.deliveryDate    = document.getElementById('edit-delivery-date').value;
-  order.trackingLocation = document.getElementById('edit-location').value.trim();
-  order.courier         = document.getElementById('edit-courier').value.trim();
-  order.trackingId      = document.getElementById('edit-tracking-id').value.trim();
-  order.retailerNote    = document.getElementById('edit-note').value.trim();
-  order.lastUpdated     = new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' });
+  const updatedFields = {
+    status:           document.getElementById('edit-status').value,
+    deliveryDate:     document.getElementById('edit-delivery-date').value,
+    trackingLocation: document.getElementById('edit-location').value.trim(),
+    courier:          document.getElementById('edit-courier').value.trim(),
+    trackingId:       document.getElementById('edit-tracking-id').value.trim(),
+    retailerNote:     document.getElementById('edit-note').value.trim(),
+    lastUpdated:      new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })
+  };
 
-  saveOrders();
+  // Apply locally
+  Object.assign(order, updatedFields);
+
+  // Push to cloud (Firebase) + local fallback
+  if (typeof cloudUpdateOrder === 'function') {
+    cloudUpdateOrder(order.orderId, updatedFields, (success) => {
+      showToast(success
+        ? `Order #${order.orderId} updated in cloud! ✅`
+        : `Order #${order.orderId} updated locally (Firebase not configured)`
+      );
+    });
+  } else {
+    saveOrders();
+    showToast(`Order #${order.orderId} updated successfully!`);
+  }
+
   closeEditModal();
   updateStats();
   renderOrders();
-
-  // Show success toast
-  showToast(`Order #${order.orderId} updated successfully!`);
 }
 
 // ——— TOAST ———

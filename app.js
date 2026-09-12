@@ -226,6 +226,48 @@ let state = {
 // Write Review Interactive State
 let activeReviewRating = 5;
 
+// Scanner progression week tracker
+let evolutionWeek = 1;
+
+// Toast notification helper
+function showCartAddSuccessToast(itemName) {
+  // Remove any existing toast
+  const existing = document.getElementById('tryo-toast');
+  if (existing) existing.remove();
+
+  const toast = document.createElement('div');
+  toast.id = 'tryo-toast';
+  toast.innerText = `✓  "${itemName}" added!`;
+  toast.style.cssText = `
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background: #b07077;
+    color: #fff;
+    padding: 12px 22px;
+    border-radius: 50px;
+    font-family: var(--font-body, sans-serif);
+    font-size: 13px;
+    font-weight: 600;
+    box-shadow: 0 4px 20px rgba(176,112,119,0.35);
+    z-index: 99999;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  `;
+  document.body.appendChild(toast);
+
+  // Fade in
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => { toast.style.opacity = '1'; });
+  });
+
+  // Fade out and remove after 2.5 seconds
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    setTimeout(() => toast.remove(), 400);
+  }, 2500);
+}
+
 // 3. APP INITIALIZATION
 document.addEventListener('DOMContentLoaded', () => {
   loadStateFromLocalStorage();

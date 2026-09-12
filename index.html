@@ -702,6 +702,18 @@
         <button class="modal-tab" id="tab-signup" onclick="switchAuthTab('signup')">Sign Up</button>
       </div>
 
+      <div class="google-auth-wrapper" style="text-align: center; margin-bottom: 20px;">
+        <button type="button" class="btn btn-outline" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 600;" onclick="handleGoogleAuth()">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google" style="width: 18px; height: 18px;">
+          Continue with Google
+        </button>
+        <div style="display: flex; align-items: center; text-align: center; color: var(--text-muted); font-size: 11px; margin-top: 20px;">
+          <hr style="flex-grow: 1; border: none; border-top: 1px solid var(--border);">
+          <span style="padding: 0 10px; text-transform: uppercase;">or use email</span>
+          <hr style="flex-grow: 1; border: none; border-top: 1px solid var(--border);">
+        </div>
+      </div>
+
       <!-- Login Form -->
       <form id="login-form" class="auth-form" onsubmit="handleLogin(event)">
         <div class="form-group">

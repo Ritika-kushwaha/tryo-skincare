@@ -350,20 +350,58 @@ function switchAuthTab(tab) {
 
 function handleLogin(e) {
   e.preventDefault();
-  const email = document.getElementById('login-email').value;
-  const name = email.split('@')[0];
-  state.currentUser = { name: capitalize(name), email: email };
+  const email = document.getElementById('login-email').value.trim().toLowerCase();
+  const password = document.getElementById('login-password').value;
+  
+  const users = JSON.parse(localStorage.getItem('tryo_all_users') || '[]');
+  const user = users.find(u => u.email === email && u.password === password);
+  
+  if (!user) {
+    alert('Incorrect email or password. Please try again or switch to Sign Up.');
+    return;
+  }
+  
+  state.currentUser = { name: capitalize(user.name.split(' ')[0]), email: user.email, fullName: user.name };
+  saveStateToLocalStorage();
+  updateUserUI();
+  closeAuthModal();
+  navigateTo('history');
+}
+
+function handleSignup(e) {
+  e.preventDefault();
+  const name = document.getElementById('signup-name').value.trim();
+  const email = document.getElementById('signup-email').value.trim().toLowerCase();
+  const password = document.getElementById('signup-password').value;
+  
+  const users = JSON.parse(localStorage.getItem('tryo_all_users') || '[]');
+  if (users.find(u => u.email === email)) {
+    alert('An account with this email already exists. Please Log In.');
+    return;
+  }
+  
+  users.push({ name, email, password });
+  localStorage.setItem('tryo_all_users', JSON.stringify(users));
+  
+  state.currentUser = { name: capitalize(name.split(' ')[0]), email, fullName: name };
   saveStateToLocalStorage();
   updateUserUI();
   closeAuthModal();
   navigateTo('shop');
 }
 
-function handleSignup(e) {
-  e.preventDefault();
-  const name = document.getElementById('signup-name').value;
-  const email = document.getElementById('signup-email').value;
-  state.currentUser = { name: name, email: email };
+function handleGoogleAuth() {
+  alert('To enable real Google Login, a Google Cloud Client ID is required. For this demo, we will simulate a successful Google Login!');
+  const name = 'Google User';
+  const email = 'google.user@gmail.com';
+  
+  const users = JSON.parse(localStorage.getItem('tryo_all_users') || '[]');
+  if (!users.find(u => u.email === email)) {
+    users.push({ name, email, password: 'google_oauth_dummy' });
+    localStorage.setItem('tryo_all_users', JSON.stringify(users));
+  }
+  
+  state.currentUser = { name: 'Google', email, fullName: name };
   saveStateToLocalStorage();
   updateUserUI();
   closeAuthModal();
@@ -1222,6 +1260,7 @@ function processPayment(e) {
       timestamp: Date.now(),
       paymentMethod: activePaymentMethod === 'card' ? '💳 Card' : activePaymentMethod === 'upi' ? '📱 UPI' : '🏠 Cash on Delivery',
       customerName: document.getElementById('shipping-name').value.trim(),
+      customerEmail: state.currentUser ? state.currentUser.email : 'guest@example.com',
       address: `${document.getElementById('shipping-address').value.trim()}, ${document.getElementById('shipping-city').value.trim()} - ${document.getElementById('shipping-zip').value.trim()}`,
       items: state.cart.map(item => ({ name: item.name, quantity: item.quantity, size: item.size, price: item.price })),
       total: state.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
@@ -1495,14 +1534,50 @@ function toggleRealCamera() {
   lucide.createIcons();
 }
 
-// 16. PROFILE LOG HISTORY VIEWER
 function renderHistory() {
   const list = document.getElementById('purchase-history-list');
   if (!list) return;
-  list.innerHTML = '';
-  
-  if (state.orders.length === 0) {
+
+  if (!state.currentUser) {
     list.innerHTML = `
+      <div class="cart-empty-box" style="border-style: solid; text-align: center; padding: 40px 20px;">
+        <i data-lucide="lock" class="empty-icon" style="margin-bottom: 10px;"></i>
+        <h4>Sign In Required</h4>
+        <p>Please log in to view your cross-device purchase history and live delivery tracking.</p>
+        <br>
+        <button class="btn btn-primary" onclick="openProfileOrLogin()">Log In / Sign Up</button>
+      </div>
+    `;
+    lucide.createIcons();
+    return;
+  }
+
+  list.innerHTML = '<p style="text-align:center; padding: 30px; color: var(--text-muted);">Fetching latest order updates...</p>';
+
+  if (typeof cloudLoadOrders === 'function') {
+    cloudLoadOrders(allCloudOrders => {
+      // 1. Sync any local orders with cloud updates
+      state.orders.forEach(localOrder => {
+        const match = allCloudOrders.find(co => co.orderId === localOrder.orderId);
+        if (match) Object.assign(localOrder, match);
+      });
+      saveStateToLocalStorage();
+
+      // 2. Filter for display based on email
+      const userEmail = state.currentUser.email;
+      const displayOrders = allCloudOrders.filter(o => o.customerEmail === userEmail);
+      
+      renderHistoryList(displayOrders, list);
+    });
+  } else {
+    // Fallback to local
+    renderHistoryList(state.orders, list);
+  }
+}
+
+function renderHistoryList(ordersToDisplay, listElement) {
+  if (ordersToDisplay.length === 0) {
+    listElement.innerHTML = `
       <div class="cart-empty-box" style="border-style: solid; text-align: center; padding: 40px 20px;">
         <i data-lucide="receipt" class="empty-icon" style="margin-bottom: 10px;"></i>
         <h4>No Orders Found</h4>
@@ -1515,7 +1590,8 @@ function renderHistory() {
     return;
   }
 
-  state.orders.forEach(order => {
+  listElement.innerHTML = '';
+  ordersToDisplay.forEach(order => {
     const card = document.createElement('div');
     card.className = 'history-card';
     
@@ -1531,6 +1607,20 @@ function renderHistory() {
     const statusColor = status.includes('COD') || status.includes('Pending') ? '#e07b3a' : 'var(--success-green)';
     const statusIcon = status.includes('COD') || status.includes('Pending') ? '⏳' : '✅';
 
+    const trackingHtml = order.trackingLocation ? `
+      <div style="background: var(--champagne); padding: 10px; border-radius: var(--border-radius-sm); margin-top: 10px; font-size: 11px;">
+        <strong style="display:block; color:var(--text-dark); margin-bottom:4px;">📍 ${order.trackingLocation}</strong>
+        ${order.courier ? `<span style="color:var(--text-muted);">📦 ${order.courier} &nbsp;|&nbsp; AWB: ${order.trackingId || '—'}</span><br>` : ''}
+        ${order.deliveryDate ? `<span style="color:var(--text-muted);">🗓 Est. Delivery: ${order.deliveryDate}</span>` : ''}
+      </div>
+    ` : '';
+
+    const noteHtml = order.retailerNote ? `
+      <div style="background: #fff8e1; border: 1px solid #ffe082; border-radius: var(--border-radius-sm); padding: 8px 10px; font-size: 11px; color: #5d4037; margin-top: 8px; font-style: italic;">
+        💬 <strong>Message from Tryo:</strong> ${order.retailerNote}
+      </div>
+    ` : '';
+
     card.innerHTML = `
       <div class="history-card-header">
         <div>
@@ -1544,13 +1634,15 @@ function renderHistory() {
       <div class="history-card-items">
         ${itemsLines}
       </div>
-      <hr style="border: none; border-top: 1px dashed var(--pale-rose); margin: 8px 0;">
+      ${trackingHtml}
+      ${noteHtml}
+      <hr style="border: none; border-top: 1px dashed var(--pale-rose); margin: 12px 0 8px;">
       <div class="history-card-footer">
         <span style="font-size:12px; color:var(--text-muted);">📦 Free Eco Shipping &nbsp;|&nbsp; ${method}</span>
         <span style="color: var(--text-dark); font-size:14px; font-weight: 600;">₹${order.total}</span>
       </div>
     `;
-    list.appendChild(card);
+    listElement.appendChild(card);
   });
 
   lucide.createIcons();

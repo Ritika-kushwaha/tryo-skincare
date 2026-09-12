@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tryo — Retailer Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <link rel="stylesheet" href="retailer.css">
+</head>
+<body>
+
+  <!-- LOGIN GATE -->
+  <div id="login-gate" class="gate-overlay">
+    <div class="gate-card">
+      <div class="gate-brand">
+        <span class="brand-dot">✦</span>
+        <h1>Tryo Retailer Portal</h1>
+        <p>Authorized Personnel Only</p>
+      </div>
+      <form onsubmit="attemptLogin(event)">
+        <div class="form-group">
+          <label for="portal-pin">Retailer PIN</label>
+          <div class="pin-input-wrapper">
+            <i data-lucide="lock"></i>
+            <input type="password" id="portal-pin" placeholder="Enter your 4-digit PIN" maxlength="4" required>
+          </div>
+        </div>
+        <div id="login-error" class="login-error hidden">❌ Incorrect PIN. Please try again.</div>
+        <button type="submit" class="btn-portal-login">Access Dashboard</button>
+      </form>
+      <p class="gate-hint">Demo PIN: <strong>1234</strong> &nbsp;|&nbsp; <a href="index.html">← Back to Store</a></p>
+    </div>
+  </div>
+
+  <!-- PORTAL DASHBOARD -->
+  <div id="portal-dashboard" class="hidden">
+
+    <!-- Header -->
+    <header class="portal-header">
+      <div class="portal-logo">
+        <span class="brand-dot">✦</span>
+        <span>Tryo Retailer Portal</span>
+      </div>
+      <div class="portal-header-actions">
+        <a href="index.html" class="header-link"><i data-lucide="shopping-bag"></i> View Store</a>
+        <button class="btn-logout" onclick="portalLogout()"><i data-lucide="log-out"></i> Logout</button>
+      </div>
+    </header>
+
+    <main class="portal-main">
+
+      <!-- Stats Row -->
+      <div class="stats-row" id="stats-row">
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#fce4ec;"><i data-lucide="package"></i></div>
+          <div class="stat-info">
+            <span class="stat-val" id="stat-total">0</span>
+            <span class="stat-label">Total Orders</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#fff8e1;"><i data-lucide="clock"></i></div>
+          <div class="stat-info">
+            <span class="stat-val" id="stat-pending">0</span>
+            <span class="stat-label">Pending / COD</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#e8f5e9;"><i data-lucide="truck"></i></div>
+          <div class="stat-info">
+            <span class="stat-val" id="stat-shipped">0</span>
+            <span class="stat-label">Shipped</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#e3f2fd;"><i data-lucide="check-circle-2"></i></div>
+          <div class="stat-info">
+            <span class="stat-val" id="stat-delivered">0</span>
+            <span class="stat-label">Delivered</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:#f3e5f5;"><i data-lucide="indian-rupee"></i></div>
+          <div class="stat-info">
+            <span class="stat-val" id="stat-revenue">₹0</span>
+            <span class="stat-label">Total Revenue</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filters & Controls -->
+      <div class="orders-toolbar">
+        <h2 class="toolbar-title"><i data-lucide="list-ordered"></i> All Orders</h2>
+        <div class="toolbar-controls">
+          <select id="filter-status" onchange="renderOrders()">
+            <option value="all">All Statuses</option>
+            <option value="Paid">✅ Paid</option>
+            <option value="COD">🏠 COD / Pending</option>
+            <option value="Processing">📦 Processing</option>
+            <option value="Shipped">🚚 Shipped</option>
+            <option value="Out for Delivery">🛵 Out for Delivery</option>
+            <option value="Delivered">✔ Delivered</option>
+          </select>
+          <select id="filter-payment" onchange="renderOrders()">
+            <option value="all">All Methods</option>
+            <option value="Card">💳 Card</option>
+            <option value="UPI">📱 UPI</option>
+            <option value="Cash on Delivery">🏠 COD</option>
+          </select>
+          <button class="btn-refresh" onclick="loadPortalData()"><i data-lucide="refresh-cw"></i> Refresh</button>
+        </div>
+      </div>
+
+      <!-- Orders List -->
+      <div id="orders-container" class="orders-container">
+        <!-- dynamically filled -->
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ORDER EDIT MODAL -->
+  <div class="modal-backdrop hidden" id="edit-order-modal">
+    <div class="edit-modal-card">
+      <button class="close-edit-btn" onclick="closeEditModal()"><i data-lucide="x"></i></button>
+      <h3>Update Order <span id="edit-order-id-label"></span></h3>
+      <p class="edit-subtitle">Update delivery status, tracking location, and estimated delivery date.</p>
+
+      <div class="edit-form-grid">
+        <div class="form-group">
+          <label>Order Status</label>
+          <select id="edit-status">
+            <option value="Paid">✅ Paid — Awaiting Processing</option>
+            <option value="Pending (COD)">⏳ Pending (COD)</option>
+            <option value="Processing">📦 Processing</option>
+            <option value="Shipped">🚚 Shipped</option>
+            <option value="Out for Delivery">🛵 Out for Delivery</option>
+            <option value="Delivered">✔ Delivered</option>
+            <option value="Cancelled">❌ Cancelled</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Estimated Delivery Date</label>
+          <input type="date" id="edit-delivery-date">
+        </div>
+
+        <div class="form-group full-width">
+          <label>Current Tracking Location</label>
+          <input type="text" id="edit-location" placeholder="e.g., Nagpur Sorting Hub, Maharashtra">
+        </div>
+
+        <div class="form-group full-width">
+          <label>Courier Partner</label>
+          <input type="text" id="edit-courier" placeholder="e.g., Delhivery, Bluedart, Ecom Express">
+        </div>
+
+        <div class="form-group full-width">
+          <label>Tracking ID / AWB</label>
+          <input type="text" id="edit-tracking-id" placeholder="e.g., DL123456789IN">
+        </div>
+
+        <div class="form-group full-width">
+          <label>Retailer Note to Customer</label>
+          <textarea id="edit-note" rows="2" placeholder="e.g., Package dispatched. Expected by evening."></textarea>
+        </div>
+      </div>
+
+      <div class="edit-modal-actions">
+        <button class="btn-cancel-edit" onclick="closeEditModal()">Cancel</button>
+        <button class="btn-save-edit" onclick="saveOrderEdit()"><i data-lucide="save"></i> Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="retailer.js"></script>
+</body>
+</html>

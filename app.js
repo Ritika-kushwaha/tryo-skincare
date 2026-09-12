@@ -270,8 +270,6 @@ function showCartAddSuccessToast(itemName) {
 
 // 3. APP INITIALIZATION
 document.addEventListener('DOMContentLoaded', () => {
-  // Initialize cloud DB (Firebase) if configured
-  if (typeof initDB === 'function') initDB();
 
   loadStateFromLocalStorage();
   renderProducts();

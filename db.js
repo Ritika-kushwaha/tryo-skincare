@@ -1,71 +1,50 @@
 /* ==========================================
    TRYO — Cloud Database Layer (db.js)
-   Works with Firebase Realtime Database.
-   Falls back to localStorage only if Firebase
-   is not yet configured.
+   Using a free public JSON API for real-time order sync
+   across devices. No signup required!
    ========================================== */
 
-let firebaseApp  = null;
-let firebaseDB   = null;
-let dbReady      = false;
+// Unique database ID created for Tryo Orders
+const DB_ID = 'ff808181a067127101a096cb54e70369';
+const API_URL = `https://api.restful-api.dev/objects/${DB_ID}`;
 
-// Initialize Firebase if configured
-function initDB() {
-  if (!FIREBASE_CONFIGURED) {
-    console.warn('[Tryo DB] Firebase not configured — using localStorage only (single device mode).');
-    dbReady = false;
-    return;
-  }
-
-  try {
-    firebaseApp = firebase.initializeApp(firebaseConfig);
-    firebaseDB  = firebase.database();
-    dbReady     = true;
-    console.log('[Tryo DB] Firebase Realtime Database connected ✅');
-  } catch (e) {
-    console.error('[Tryo DB] Firebase init failed:', e);
-    dbReady = false;
-  }
-}
+// Keep track of the current polling interval for live updates
+let liveUpdateInterval = null;
 
 // ——— SAVE A SINGLE ORDER ———
-// Called from app.js after checkout
 function cloudSaveOrder(orderData) {
-  // Always save locally
+  // 1. Save locally immediately for snappy UI
   const local = getLocalOrders();
   local.unshift(orderData);
   localStorage.setItem('tryo_orders', JSON.stringify(local));
 
-  // Save to Firebase if ready
-  if (dbReady && firebaseDB) {
-    const ref = firebaseDB.ref('orders/' + orderData.orderId);
-    ref.set(orderData)
-      .then(() => console.log('[Tryo DB] Order saved to cloud:', orderData.orderId))
-      .catch(err => console.error('[Tryo DB] Cloud save failed:', err));
-  }
+  // 2. Push to cloud
+  fetch(API_URL)
+    .then(res => res.json())
+    .then(data => {
+      const cloudOrders = (data && data.data && data.data.orders) ? data.data.orders : [];
+      // Add the new order to the front
+      cloudOrders.unshift(orderData);
+
+      // Send updated list back to cloud
+      return fetch(API_URL, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: 'TryoDB', data: { orders: cloudOrders } })
+      });
+    })
+    .then(() => console.log('[Tryo DB] Order saved to cloud:', orderData.orderId))
+    .catch(err => console.error('[Tryo DB] Cloud save failed:', err));
 }
 
 // ——— LOAD ALL ORDERS (cloud + merge local) ———
-// callback(ordersArray) is called with the result
 function cloudLoadOrders(callback) {
-  if (!dbReady || !firebaseDB) {
-    // Offline mode — return localStorage orders
-    callback(getLocalOrders());
-    return;
-  }
-
-  firebaseDB.ref('orders').orderByChild('date').once('value')
-    .then(snapshot => {
-      const data = snapshot.val();
-      if (!data) {
-        callback([]);
-        return;
-      }
-      // Firebase returns an object keyed by orderId — convert to array, newest first
-      const orders = Object.values(data).reverse();
-      // Merge into localStorage for offline cache
-      localStorage.setItem('tryo_orders', JSON.stringify(orders));
-      callback(orders);
+  fetch(API_URL)
+    .then(res => res.json())
+    .then(data => {
+      const cloudOrders = (data && data.data && data.data.orders) ? data.data.orders : [];
+      localStorage.setItem('tryo_orders', JSON.stringify(cloudOrders));
+      callback(cloudOrders);
     })
     .catch(err => {
       console.error('[Tryo DB] Cloud load failed, using localStorage:', err);
@@ -84,35 +63,59 @@ function cloudUpdateOrder(orderId, updatedFields, callback) {
     localStorage.setItem('tryo_orders', JSON.stringify(local));
   }
 
-  if (dbReady && firebaseDB) {
-    firebaseDB.ref('orders/' + orderId).update(updatedFields)
-      .then(() => {
-        console.log('[Tryo DB] Order updated in cloud:', orderId);
-        if (callback) callback(true);
-      })
-      .catch(err => {
-        console.error('[Tryo DB] Cloud update failed:', err);
+  // Update cloud
+  fetch(API_URL)
+    .then(res => res.json())
+    .then(data => {
+      const cloudOrders = (data && data.data && data.data.orders) ? data.data.orders : [];
+      const cloudIdx = cloudOrders.findIndex(o => o.orderId === orderId);
+      
+      if (cloudIdx > -1) {
+        Object.assign(cloudOrders[cloudIdx], updatedFields);
+        
+        return fetch(API_URL, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: 'TryoDB', data: { orders: cloudOrders } })
+        }).then(() => {
+          console.log('[Tryo DB] Order updated in cloud:', orderId);
+          if (callback) callback(true);
+        });
+      } else {
         if (callback) callback(false);
-      });
-  } else {
-    if (callback) callback(false);
-  }
+      }
+    })
+    .catch(err => {
+      console.error('[Tryo DB] Cloud update failed:', err);
+      if (callback) callback(false);
+    });
 }
 
-// ——— LISTEN FOR REAL-TIME ORDER UPDATES ———
-// Used by retailer portal for live refresh
+// ——— LISTEN FOR REAL-TIME ORDER UPDATES (POLLING) ———
+// Used by retailer portal for live refresh without needing a page reload
 function cloudListenOrders(callback) {
-  if (!dbReady || !firebaseDB) {
-    callback(getLocalOrders());
-    return;
-  }
+  // Do an immediate initial fetch
+  cloudLoadOrders(callback);
 
-  firebaseDB.ref('orders').on('value', snapshot => {
-    const data = snapshot.val();
-    const orders = data ? Object.values(data).reverse() : [];
-    localStorage.setItem('tryo_orders', JSON.stringify(orders));
-    callback(orders);
-  });
+  // Clear any existing polling
+  if (liveUpdateInterval) clearInterval(liveUpdateInterval);
+
+  // Poll every 5 seconds for new updates
+  liveUpdateInterval = setInterval(() => {
+    fetch(API_URL)
+      .then(res => res.json())
+      .then(data => {
+        const cloudOrders = (data && data.data && data.data.orders) ? data.data.orders : [];
+        // Only update local and trigger callback if data changed
+        const currentLocal = localStorage.getItem('tryo_orders');
+        const newCloudStr = JSON.stringify(cloudOrders);
+        if (currentLocal !== newCloudStr) {
+          localStorage.setItem('tryo_orders', newCloudStr);
+          callback(cloudOrders);
+        }
+      })
+      .catch(() => {}); // silent fail on background poll
+  }, 5000);
 }
 
 // ——— HELPER: get orders from localStorage ———

@@ -31,11 +31,8 @@ function portalLogout() {
   document.getElementById('portal-pin').value = '';
 }
 
-// ——— LOAD DATA — REAL-TIME FROM FIREBASE ———
+// ——— LOAD DATA — REAL-TIME FROM CLOUD DB ———
 function loadPortalData() {
-  // Initialize Firebase if not yet done
-  if (typeof initDB === 'function') initDB();
-
   // Show a loading indicator
   document.getElementById('orders-container').innerHTML = `
     <div class="empty-orders">

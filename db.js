@@ -32,9 +32,33 @@ function cloudLoadOrders(callback) {
   fetch(API_URL)
     .then(res => res.json())
     .then(data => {
-      const cloudOrders = data.orders || [];
-      localStorage.setItem('tryo_orders', JSON.stringify(cloudOrders));
-      callback(cloudOrders);
+      let cloudOrders = data.orders || [];
+      
+      // Merge with local orders to prevent data loss on serverless cold starts
+      const localOrders = getLocalOrders();
+      let merged = [...cloudOrders];
+      
+      localOrders.forEach(localOrder => {
+        if (!merged.find(o => o.orderId === localOrder.orderId)) {
+          merged.push(localOrder);
+        }
+      });
+      
+      // Sort by newest first (descending timestamp)
+      merged.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+      localStorage.setItem('tryo_orders', JSON.stringify(merged));
+
+      // If local had orders the cloud didn't, push the merged list back to cloud
+      if (merged.length > cloudOrders.length) {
+        fetch(API_URL, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ orders: merged })
+        }).catch(e => console.error("Sync up failed", e));
+      }
+
+      callback(merged);
     })
     .catch(err => {
       console.error('[Tryo DB] Cloud load failed, using localStorage:', err);
@@ -95,13 +119,32 @@ function cloudListenOrders(callback) {
     fetch(API_URL)
       .then(res => res.json())
       .then(data => {
-        const cloudOrders = data.orders || [];
-        // Only update local and trigger callback if data changed
-        const currentLocal = localStorage.getItem('tryo_orders');
-        const newCloudStr = JSON.stringify(cloudOrders);
-        if (currentLocal !== newCloudStr) {
-          localStorage.setItem('tryo_orders', newCloudStr);
-          callback(cloudOrders);
+        let cloudOrders = data.orders || [];
+        const localOrders = getLocalOrders();
+        let merged = [...cloudOrders];
+        
+        localOrders.forEach(localOrder => {
+          if (!merged.find(o => o.orderId === localOrder.orderId)) {
+            merged.push(localOrder);
+          }
+        });
+        merged.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+        const currentLocalStr = localStorage.getItem('tryo_orders');
+        const newMergedStr = JSON.stringify(merged);
+        
+        if (currentLocalStr !== newMergedStr) {
+          localStorage.setItem('tryo_orders', newMergedStr);
+          callback(merged);
+        }
+        
+        // If local had orders the cloud didn't (e.g. cloud just cold-started), restore cloud
+        if (merged.length > cloudOrders.length) {
+          fetch(API_URL, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ orders: merged })
+          }).catch(()=>{});
         }
       })
       .catch(() => {}); // silent fail on background poll

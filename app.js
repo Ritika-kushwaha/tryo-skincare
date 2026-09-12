@@ -390,18 +390,26 @@ function handleSignup(e) {
   navigateTo('shop');
 }
 
-function handleGoogleAuth() {
-  alert('To enable real Google Login, a Google Cloud Client ID is required. For this demo, we will simulate a successful Google Login!');
-  const name = 'Google User';
-  const email = 'google.user@gmail.com';
+function handleCredentialResponse(response) {
+  // Decode the JWT token returned by Google
+  const base64Url = response.credential.split('.')[1];
+  const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+  const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+  }).join(''));
+  
+  const payload = JSON.parse(jsonPayload);
+  // payload contains: email, name, given_name, picture
   
   const users = JSON.parse(localStorage.getItem('tryo_all_users') || '[]');
-  if (!users.find(u => u.email === email)) {
-    users.push({ name, email, password: 'google_oauth_dummy' });
+  if (!users.find(u => u.email === payload.email)) {
+    users.push({ name: payload.name, email: payload.email, password: 'google_oauth_user' });
     localStorage.setItem('tryo_all_users', JSON.stringify(users));
   }
   
-  state.currentUser = { name: 'Google', email, fullName: name };
+  const firstName = payload.given_name || payload.name.split(' ')[0];
+  state.currentUser = { name: capitalize(firstName), email: payload.email, fullName: payload.name, picture: payload.picture };
+  
   saveStateToLocalStorage();
   updateUserUI();
   closeAuthModal();
@@ -423,15 +431,27 @@ function updateUserUI() {
   const profileBtnText = document.getElementById('user-display-name');
   const profileName = document.getElementById('profile-user-name');
   const profileEmail = document.getElementById('profile-user-email');
+  const profileAvatar = document.getElementById('profile-avatar');
 
   if (state.currentUser) {
     profileBtnText.innerText = state.currentUser.name;
-    profileName.innerText = state.currentUser.name;
+    profileName.innerText = state.currentUser.fullName || state.currentUser.name;
     profileEmail.innerText = state.currentUser.email;
+    
+    if (state.currentUser.picture && profileAvatar) {
+      profileAvatar.innerHTML = `<img src="${state.currentUser.picture}" alt="Profile" style="width:100%; height:100%; border-radius:50%; object-fit:cover;">`;
+    } else if (profileAvatar) {
+      profileAvatar.innerHTML = `<i data-lucide="user"></i>`;
+      lucide.createIcons();
+    }
   } else {
     profileBtnText.innerText = 'Login';
     profileName.innerText = 'Guest User';
     profileEmail.innerText = 'Sign in to save purchase logs forever!';
+    if (profileAvatar) {
+      profileAvatar.innerHTML = `<i data-lucide="user"></i>`;
+      lucide.createIcons();
+    }
   }
 }
 

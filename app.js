@@ -390,25 +390,31 @@ function handleSignup(e) {
   navigateTo('shop');
 }
 
-function handleCredentialResponse(response) {
-  // Decode the JWT token returned by Google
-  const base64Url = response.credential.split('.')[1];
-  const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-  const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
-      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-  }).join(''));
+function simulateGoogleLogin() {
+  const name = prompt("Google Sign-In Simulation\n\nEnter your Full Name:");
+  if (!name) return;
   
-  const payload = JSON.parse(jsonPayload);
-  // payload contains: email, name, given_name, picture
+  let email = prompt("Enter your Gmail Address:");
+  if (!email) return;
+  email = email.trim().toLowerCase();
+  
+  if (!email.includes('@')) {
+    email = email + '@gmail.com';
+  }
   
   const users = JSON.parse(localStorage.getItem('tryo_all_users') || '[]');
-  if (!users.find(u => u.email === payload.email)) {
-    users.push({ name: payload.name, email: payload.email, password: 'google_oauth_user' });
+  if (!users.find(u => u.email === email)) {
+    users.push({ name: name, email: email, password: 'google_oauth_user' });
     localStorage.setItem('tryo_all_users', JSON.stringify(users));
   }
   
-  const firstName = payload.given_name || payload.name.split(' ')[0];
-  state.currentUser = { name: capitalize(firstName), email: payload.email, fullName: payload.name, picture: payload.picture };
+  const firstName = name.split(' ')[0];
+  state.currentUser = { 
+    name: capitalize(firstName), 
+    email: email, 
+    fullName: name, 
+    picture: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random` 
+  };
   
   saveStateToLocalStorage();
   updateUserUI();

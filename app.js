@@ -1156,23 +1156,72 @@ function renderCheckoutSummary() {
   document.getElementById('checkout-subtotal').innerText = `₹${subtotal}`;
   document.getElementById('checkout-total').innerText = `₹${subtotal}`;
   document.getElementById('checkout-pay-total').innerText = subtotal;
+
+  // Reset to card method on each new checkout visit
+  selectPaymentMethod('card');
+}
+
+// Payment method tab switcher
+let activePaymentMethod = 'card';
+function selectPaymentMethod(method) {
+  activePaymentMethod = method;
+
+  // Toggle tab button active states
+  ['card', 'upi', 'cod'].forEach(m => {
+    document.getElementById(`pm-${m}`).classList.toggle('active', m === method);
+    document.getElementById(`panel-${m}`).classList.toggle('hidden', m !== method);
+  });
+
+  // Update pay button label
+  const label = document.getElementById('pay-btn-label');
+  if (method === 'cod') {
+    label.innerText = 'Place Order (Pay on Delivery)';
+  } else if (method === 'upi') {
+    label.innerText = 'Confirm UPI Payment';
+  } else {
+    label.innerText = 'Authorize & Pay';
+  }
+
+  lucide.createIcons();
 }
 
 function processPayment(e) {
   e.preventDefault();
 
+  // Basic validation per method
+  if (activePaymentMethod === 'card') {
+    const num = document.getElementById('card-number').value.trim();
+    const exp = document.getElementById('card-expiry').value.trim();
+    const cvv = document.getElementById('card-cvv').value.trim();
+    if (!num || !exp || !cvv) {
+      alert('Please fill in all card details to proceed.');
+      return;
+    }
+  } else if (activePaymentMethod === 'upi') {
+    const upiId = document.getElementById('upi-id').value.trim();
+    if (!upiId || !upiId.includes('@')) {
+      alert('Please enter a valid UPI ID (e.g. yourname@oksbi)');
+      return;
+    }
+  }
+  // COD: no extra validation needed
+
   const loadingOverlay = document.getElementById('payment-loading-screen');
   loadingOverlay.classList.remove('hidden');
+
+  const delay = activePaymentMethod === 'cod' ? 1500 : 3000;
 
   setTimeout(() => {
     loadingOverlay.classList.add('hidden');
     renderSuccessReceipt();
-    
+
     const orderData = {
       orderId: 'TR-' + Math.floor(100000 + Math.random() * 900000),
       date: new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }),
+      paymentMethod: activePaymentMethod === 'card' ? '💳 Card' : activePaymentMethod === 'upi' ? '📱 UPI' : '🏠 Cash on Delivery',
       items: state.cart.map(item => ({ name: item.name, quantity: item.quantity, size: item.size, price: item.price })),
-      total: state.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+      total: state.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+      status: activePaymentMethod === 'cod' ? 'Pending (COD)' : 'Paid'
     };
 
     state.orders.unshift(orderData);
@@ -1182,7 +1231,7 @@ function processPayment(e) {
 
     document.getElementById('payment-success-screen').classList.remove('hidden');
     document.getElementById('payment-form').reset();
-  }, 3000);
+  }, delay);
 }
 
 function renderSuccessReceipt() {
@@ -1197,19 +1246,31 @@ function renderSuccessReceipt() {
     </div>
   `).join('');
 
+  const methodLabel = activePaymentMethod === 'card' ? '💳 Card' : activePaymentMethod === 'upi' ? '📱 UPI' : '🏠 Cash on Delivery';
+  const statusLabel = activePaymentMethod === 'cod' ? '⏳ Pay on delivery' : '✅ Paid';
+  const totalLabel = activePaymentMethod === 'cod' ? 'Amount to Pay on Delivery:' : 'Total Paid:';
+
   box.innerHTML = `
     <div class="receipt-header">
       <h3 class="receipt-title">Tryo Invoice</h3>
-      <p style="font-size: 11px; color: var(--text-muted);">Tryo Organic Wellness &bull; Biodegradable sugarcane tubes</p>
+      <p style="font-size: 11px; color: var(--text-muted);">Tryo Organic Wellness &bull; Biodegradable packaging</p>
     </div>
     ${itemsRows}
     <hr style="margin: 12px 0; border: none; border-top: 1px dashed var(--pale-rose);">
     <div class="receipt-item-row" style="font-weight: 600; font-size: 14px; color: var(--text-dark);">
-      <span>Total Paid:</span>
+      <span>${totalLabel}</span>
       <span>₹${total}</span>
     </div>
+    <div class="receipt-item-row" style="font-size: 12px; margin-top: 6px;">
+      <span style="color:var(--text-muted);">Payment Method:</span>
+      <span style="font-weight:600;">${methodLabel}</span>
+    </div>
+    <div class="receipt-item-row" style="font-size: 12px;">
+      <span style="color:var(--text-muted);">Status:</span>
+      <span style="font-weight:600; color: var(--success-green);">${statusLabel}</span>
+    </div>
     <p style="font-size: 11px; color: var(--success-green); text-align: center; margin-top: 15px; font-weight: 600;">
-      🍃 standard clinical packaging shipping in progress! Passed owner tests.
+      🍃 Eco-friendly packaging dispatching soon!
     </p>
   `;
 }
@@ -1432,8 +1493,10 @@ function renderHistory() {
     list.innerHTML = `
       <div class="cart-empty-box" style="border-style: solid; text-align: center; padding: 40px 20px;">
         <i data-lucide="receipt" class="empty-icon" style="margin-bottom: 10px;"></i>
-        <h4>No Past Transactions Found</h4>
-        <p>Login to a persistent profile, or order mini organic trial products to create invoice records!</p>
+        <h4>No Orders Found</h4>
+        <p>Your past orders will appear here after checkout. Try adding products to cart and placing an order!</p>
+        <br>
+        <button class="btn btn-primary" onclick="navigateTo('shop')">Start Shopping</button>
       </div>
     `;
     lucide.createIcons();
@@ -1446,23 +1509,33 @@ function renderHistory() {
     
     const itemsLines = order.items.map(item => `
       <div class="receipt-item-row" style="margin-bottom: 4px;">
-        <span>${item.name} (${item.quantity}x)</span>
+        <span>${item.name} (${item.quantity}x) &mdash; ${item.size === 'mini' ? 'Mini Trial' : 'Full Size'}</span>
         <span>₹${item.price * item.quantity}</span>
       </div>
     `).join('');
 
+    const method = order.paymentMethod || '💳 Card';
+    const status = order.status || 'Paid';
+    const statusColor = status.includes('COD') || status.includes('Pending') ? '#e07b3a' : 'var(--success-green)';
+    const statusIcon = status.includes('COD') || status.includes('Pending') ? '⏳' : '✅';
+
     card.innerHTML = `
       <div class="history-card-header">
-        <h4>Order ID: ${order.orderId}</h4>
-        <span class="history-date">${order.date}</span>
+        <div>
+          <h4>Order #${order.orderId}</h4>
+          <span class="history-date">${order.date}</span>
+        </div>
+        <span class="order-status-badge" style="background: ${statusColor}22; color: ${statusColor}; border: 1px solid ${statusColor}44;">
+          ${statusIcon} ${status}
+        </span>
       </div>
       <div class="history-card-items">
         ${itemsLines}
       </div>
-      <hr style="border: none; border-top: 1px dashed var(--pale-rose); margin: 5px 0;">
+      <hr style="border: none; border-top: 1px dashed var(--pale-rose); margin: 8px 0;">
       <div class="history-card-footer">
-        <span>Bio-shipping: Free</span>
-        <span style="color: var(--text-dark); font-size:14px; font-weight: 600;">Paid: ₹${order.total}</span>
+        <span style="font-size:12px; color:var(--text-muted);">📦 Free Eco Shipping &nbsp;|&nbsp; ${method}</span>
+        <span style="color: var(--text-dark); font-size:14px; font-weight: 600;">₹${order.total}</span>
       </div>
     `;
     list.appendChild(card);

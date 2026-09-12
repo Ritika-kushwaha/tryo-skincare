@@ -406,14 +406,14 @@
     <section id="checkout-view" class="view-panel">
       <div class="section-header">
         <h2>Secure Payment Window 💳</h2>
-        <p>Enter your details below to finalize your organic beauty order. Real authorization will be simulated.</p>
+        <p>Choose your preferred payment method and complete your organic beauty order.</p>
       </div>
 
       <div class="checkout-form-container">
         <div class="checkout-split">
           <!-- Left: Checkout Inputs -->
           <div class="card checkout-card">
-            <h3>Shipping & Payment Details</h3>
+            <h3>Shipping Details</h3>
             <form id="payment-form" onsubmit="processPayment(event)">
               <div class="form-group">
                 <label for="shipping-name">Full Name</label>
@@ -429,34 +429,114 @@
                   <input type="text" id="shipping-city" placeholder="Mumbai" required>
                 </div>
                 <div class="form-group">
-                  <label for="shipping-zip">Zip/Pin Code</label>
+                  <label for="shipping-zip">Pin Code</label>
                   <input type="text" id="shipping-zip" placeholder="400001" required>
                 </div>
               </div>
 
-              <div class="payment-card-inputs">
-                <h4>Payment Method: Credit / Debit Card</h4>
+              <!-- Payment Method Selector -->
+              <div class="payment-method-selector">
+                <h4>Select Payment Method</h4>
+                <div class="payment-method-tabs">
+                  <button type="button" class="pay-method-btn active" id="pm-card" onclick="selectPaymentMethod('card')">
+                    💳 Card
+                  </button>
+                  <button type="button" class="pay-method-btn" id="pm-upi" onclick="selectPaymentMethod('upi')">
+                    📱 UPI
+                  </button>
+                  <button type="button" class="pay-method-btn" id="pm-cod" onclick="selectPaymentMethod('cod')">
+                    🏠 Cash on Delivery
+                  </button>
+                </div>
+              </div>
+
+              <!-- Card Payment Panel -->
+              <div class="payment-panel" id="panel-card">
                 <div class="form-group">
                   <label for="card-number">Card Number</label>
                   <div class="input-icon-wrapper">
                     <i data-lucide="credit-card"></i>
-                    <input type="text" id="card-number" placeholder="4111 2222 3333 4444" pattern="\d{4}\s?\d{4}\s?\d{4}\s?\d{4}" maxlength="19" required>
+                    <input type="text" id="card-number" placeholder="4111 2222 3333 4444" maxlength="19">
                   </div>
                 </div>
                 <div class="form-row">
                   <div class="form-group">
                     <label for="card-expiry">Expiry Date</label>
-                    <input type="text" id="card-expiry" placeholder="MM/YY" pattern="\d{2}/\d{2}" maxlength="5" required>
+                    <input type="text" id="card-expiry" placeholder="MM/YY" maxlength="5">
                   </div>
                   <div class="form-group">
                     <label for="card-cvv">CVV</label>
-                    <input type="password" id="card-cvv" placeholder="123" pattern="\d{3}" maxlength="3" required>
+                    <input type="password" id="card-cvv" placeholder="123" maxlength="3">
+                  </div>
+                </div>
+                <div class="card-logos">
+                  <span>VISA</span><span>MasterCard</span><span>RuPay</span>
+                </div>
+              </div>
+
+              <!-- UPI Payment Panel -->
+              <div class="payment-panel hidden" id="panel-upi">
+                <div class="upi-options">
+                  <p class="upi-label">Pay via any UPI app:</p>
+                  <div class="upi-app-logos">
+                    <div class="upi-app-pill">🟣 PhonePe</div>
+                    <div class="upi-app-pill">🔵 GPay</div>
+                    <div class="upi-app-pill">🟠 Paytm</div>
+                    <div class="upi-app-pill">🟤 BHIM</div>
+                  </div>
+                </div>
+                <div class="form-group" style="margin-top:14px;">
+                  <label for="upi-id">Enter Your UPI ID</label>
+                  <div class="input-icon-wrapper">
+                    <i data-lucide="at-sign"></i>
+                    <input type="text" id="upi-id" placeholder="yourname@upi  e.g. ritika@oksbi">
+                  </div>
+                </div>
+                <div class="upi-qr-box">
+                  <div class="upi-qr-placeholder">
+                    <p style="font-size:11px; color:var(--text-muted); text-align:center;">
+                      📷 Scan QR from any UPI app<br>
+                      <strong style="color:var(--primary-rose);">tryo@ybl</strong>
+                    </p>
+                    <!-- QR grid pattern (decorative) -->
+                    <svg width="80" height="80" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                      <rect x="5" y="5" width="28" height="28" rx="3" fill="none" stroke="#b07077" stroke-width="3"/>
+                      <rect x="12" y="12" width="14" height="14" rx="1" fill="#b07077"/>
+                      <rect x="47" y="5" width="28" height="28" rx="3" fill="none" stroke="#b07077" stroke-width="3"/>
+                      <rect x="54" y="12" width="14" height="14" rx="1" fill="#b07077"/>
+                      <rect x="5" y="47" width="28" height="28" rx="3" fill="none" stroke="#b07077" stroke-width="3"/>
+                      <rect x="12" y="54" width="14" height="14" rx="1" fill="#b07077"/>
+                      <rect x="47" y="47" width="6" height="6" fill="#b07077"/>
+                      <rect x="55" y="47" width="6" height="6" fill="#b07077"/>
+                      <rect x="63" y="47" width="6" height="6" fill="#b07077"/>
+                      <rect x="47" y="55" width="6" height="6" fill="#b07077"/>
+                      <rect x="63" y="55" width="6" height="6" fill="#b07077"/>
+                      <rect x="47" y="63" width="6" height="6" fill="#b07077"/>
+                      <rect x="55" y="63" width="6" height="6" fill="#b07077"/>
+                      <rect x="63" y="63" width="6" height="6" fill="#b07077"/>
+                    </svg>
                   </div>
                 </div>
               </div>
 
+              <!-- COD Panel -->
+              <div class="payment-panel hidden" id="panel-cod">
+                <div class="cod-info-box">
+                  <div class="cod-icon">🏠</div>
+                  <h4>Cash on Delivery</h4>
+                  <p>Pay when your Tryo order arrives at your doorstep. Our eco-friendly packaging includes the invoice slip inside.</p>
+                  <ul class="cod-perks">
+                    <li>✅ No advance payment needed</li>
+                    <li>✅ Pay in exact cash to delivery partner</li>
+                    <li>✅ Available across all Indian pincodes</li>
+                    <li>⚠️ COD orders may take 1-2 extra days</li>
+                  </ul>
+                </div>
+              </div>
+
               <button type="submit" class="btn btn-primary btn-block btn-lg" id="btn-pay-now">
-                <i data-lucide="sparkles"></i> Authorize & Pay ₹<span id="checkout-pay-total">0</span>
+                <i data-lucide="sparkles"></i>
+                <span id="pay-btn-label">Authorize &amp; Pay</span> ₹<span id="checkout-pay-total">0</span>
               </button>
             </form>
           </div>
@@ -477,10 +557,17 @@
                 <span>Combo Discount:</span>
                 <span id="checkout-discount">-₹0</span>
               </div>
+              <div class="billing-row">
+                <span>Eco Shipping:</span>
+                <span class="green-text">FREE 🌿</span>
+              </div>
               <div class="billing-row total-row">
                 <span>Total Charge:</span>
                 <span id="checkout-total">₹0</span>
               </div>
+            </div>
+            <div class="safe-pay-badge">
+              <i data-lucide="shield-check"></i> 100% Secure &amp; Encrypted Payment
             </div>
           </div>
         </div>
@@ -493,21 +580,21 @@
           <div class="anim-bubble b2"></div>
           <div class="anim-bubble b3"></div>
         </div>
-        <h2>Processing Secure Payment...</h2>
-        <p>Connecting to secure payment gateway. Please do not close this window.</p>
+        <h2>Processing Payment...</h2>
+        <p>Please do not close this window.</p>
         <span class="clinical-fact-tip">Did you know? Our packaging biodegrades in compost within 90 days! 🌎</span>
       </div>
 
       <!-- Success Receipt Screen -->
       <div class="payment-success-screen hidden" id="payment-success-screen">
         <div class="success-heart-icon"><i data-lucide="check-circle-2"></i></div>
-        <h2>Payment Successful! 🎉</h2>
-        <p>Thank you for choosing Tryo! Your order has been placed successfully.</p>
+        <h2>Order Placed Successfully! 🎉</h2>
+        <p>Thank you for choosing Tryo! Your order has been confirmed.</p>
         <div class="receipt-card" id="receipt-bill-box">
           <!-- Populated by JavaScript -->
         </div>
         <button class="btn btn-primary" onclick="navigateTo('home')">Return Home</button>
-        <button class="btn btn-secondary" onclick="navigateTo('history')">View Purchase History</button>
+        <button class="btn btn-secondary" onclick="navigateTo('history')">View My Orders</button>
       </div>
     </section>
 

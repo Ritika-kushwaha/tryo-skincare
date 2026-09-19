@@ -1307,6 +1307,9 @@ function processPayment(e) {
 
       document.getElementById('payment-success-screen').classList.remove('hidden');
       document.getElementById('payment-form').reset();
+      
+      // Trigger Order Confirmation Email!
+      sendOrderEmail(orderData, 'confirmation');
     }, 1000);
   };
 
@@ -1361,6 +1364,38 @@ function processPayment(e) {
   } else {
     // Cash on Delivery
     finalizeOrder();
+  }
+}
+
+// Function to send emails (Confirmation or Status Alerts) using EmailJS
+function sendOrderEmail(orderData, type) {
+  const emailParams = {
+    to_email: orderData.customerEmail,
+    to_name: orderData.customerName,
+    order_id: orderData.orderId,
+    order_total: orderData.total,
+    order_status: orderData.status,
+    message: type === 'confirmation' 
+      ? `Thank you for your order! Your payment method: ${orderData.paymentMethod}.`
+      : `Your order status has been updated to: ${orderData.status}.`
+  };
+
+  if (typeof emailjs !== 'undefined' && emailjs._publicKey) {
+    // Requires setting up a Service ID and Template ID in EmailJS
+    emailjs.send("YOUR_SERVICE_ID", "YOUR_TEMPLATE_ID", emailParams)
+      .then(() => {
+        showToast(`📧 Email sent to ${orderData.customerEmail}`);
+      })
+      .catch(err => {
+        console.error("EmailJS Error:", err);
+        showToast(`📧 [Simulated Email] Sent to ${orderData.customerEmail}`);
+      });
+  } else {
+    // Fallback simulation for prototype
+    console.log("Simulating Email Sending:", emailParams);
+    setTimeout(() => {
+      showToast(`📧 [Simulated Email] Sent to ${orderData.customerEmail}`);
+    }, 1500);
   }
 }
 

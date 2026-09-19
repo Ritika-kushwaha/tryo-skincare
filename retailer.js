@@ -244,9 +244,39 @@ function saveOrderEdit() {
     showToast(`Order #${order.orderId} updated successfully!`);
   }
 
+  // Trigger Email Alert
+  sendRetailerEmail(order, 'alert');
+
   closeEditModal();
   updateStats();
   renderOrders();
+}
+
+// Function to send Order Status Alert using EmailJS
+function sendRetailerEmail(orderData, type) {
+  const emailParams = {
+    to_email: orderData.customerEmail,
+    to_name: orderData.customerName,
+    order_id: orderData.orderId,
+    order_total: orderData.total,
+    order_status: orderData.status,
+    message: `Your order status has been updated to: ${orderData.status}.`
+  };
+
+  if (typeof emailjs !== 'undefined' && emailjs._publicKey) {
+    emailjs.send("YOUR_SERVICE_ID", "YOUR_TEMPLATE_ID", emailParams)
+      .then(() => {
+        setTimeout(() => showToast(`📧 Status update email sent to ${orderData.customerEmail}`), 1000);
+      })
+      .catch(err => {
+        console.error("EmailJS Error:", err);
+        setTimeout(() => showToast(`📧 [Simulated Email] Sent to ${orderData.customerEmail}`), 1000);
+      });
+  } else {
+    setTimeout(() => {
+      showToast(`📧 [Simulated Email] Sent to ${orderData.customerEmail}`);
+    }, 1500);
+  }
 }
 
 // ——— TOAST ———

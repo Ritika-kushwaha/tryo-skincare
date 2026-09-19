@@ -1268,6 +1268,16 @@ function processPayment(e) {
   const finalizeOrder = () => {
     const loadingOverlay = document.getElementById('payment-loading-screen');
     loadingOverlay.classList.remove('hidden');
+    
+    // Simulated delay for UPI to feel like it's waiting for a phone app confirmation
+    const delayMs = activePaymentMethod === 'upi' ? 8000 : 1000;
+    
+    if (activePaymentMethod === 'upi') {
+      const loadingText = loadingOverlay.querySelector('p');
+      if (loadingText) {
+        loadingText.innerHTML = "Waiting for you to authorize the payment in your UPI app...<br><br>Please do not close this window.";
+      }
+    }
 
     setTimeout(() => {
       loadingOverlay.classList.add('hidden');
@@ -1277,7 +1287,7 @@ function processPayment(e) {
         orderId: 'TR-' + Math.floor(100000 + Math.random() * 900000),
         date: new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }),
         timestamp: Date.now(),
-        paymentMethod: activePaymentMethod === 'card' ? '💳 Card (Razorpay)' : activePaymentMethod === 'upi' ? '📱 UPI (Razorpay)' : '🏠 Cash on Delivery',
+        paymentMethod: activePaymentMethod === 'card' ? '💳 Card (Razorpay)' : activePaymentMethod === 'upi' ? '📱 UPI (PhonePe/GPay)' : '🏠 Cash on Delivery',
         customerName: customerName,
         customerEmail: customerEmail,
         address: `${document.getElementById('shipping-address').value.trim()}, ${document.getElementById('shipping-city').value.trim()}`,
@@ -1303,7 +1313,7 @@ function processPayment(e) {
       
       // Trigger Order Confirmation Email!
       sendOrderEmail(orderData, 'confirmation');
-    }, 1000);
+    }, delayMs);
   };
 
   // Trigger Razorpay ONLY for Card payments

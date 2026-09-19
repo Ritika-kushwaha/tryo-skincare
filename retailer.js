@@ -264,7 +264,7 @@ function sendRetailerEmail(orderData, type) {
   };
 
   if (typeof emailjs !== 'undefined' && emailjs._publicKey) {
-    emailjs.send("YOUR_SERVICE_ID", "YOUR_TEMPLATE_ID", emailParams)
+    emailjs.send("service_d5w4qrw", "YOUR_TEMPLATE_ID", emailParams)
       .then(() => {
         setTimeout(() => showToast(`📧 Status update email sent to ${orderData.customerEmail}`), 1000);
       })

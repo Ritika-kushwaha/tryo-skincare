@@ -1318,7 +1318,7 @@ function processPayment(e) {
     // Check if Razorpay is loaded
     if (typeof Razorpay !== 'undefined') {
       var options = {
-        "key": "rzp_test_YOUR_KEY_HERE", // Replace with your actual Razorpay Test Key
+        "key": "rzp_test_Tdz3T845NCiob7", // Razorpay Test Key
         "amount": totalAmount * 100, // Amount in paise
         "currency": "INR",
         "name": "Tryo Organic",

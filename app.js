@@ -1382,7 +1382,7 @@ function sendOrderEmail(orderData, type) {
 
   if (typeof emailjs !== 'undefined' && emailjs._publicKey) {
     // Requires setting up a Service ID and Template ID in EmailJS
-    emailjs.send("service_d5w4qrw", "YOUR_TEMPLATE_ID", emailParams)
+    emailjs.send("service_d5w4qrw", "template_5n9hbcw", emailParams)
       .then(() => {
         showToast(`📧 Email sent to ${orderData.customerEmail}`);
       })

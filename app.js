@@ -1263,21 +1263,9 @@ function processPayment(e) {
   const customerEmail = state.currentUser ? state.currentUser.email : 'guest@example.com';
   const totalAmount = state.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
-  // No local UI validation needed for prototype.
-
   const finalizeOrder = () => {
     const loadingOverlay = document.getElementById('payment-loading-screen');
     loadingOverlay.classList.remove('hidden');
-    
-    // Simulated delay for UPI to feel like it's waiting for a phone app confirmation
-    const delayMs = activePaymentMethod === 'upi' ? 8000 : 1000;
-    
-    if (activePaymentMethod === 'upi') {
-      const loadingText = loadingOverlay.querySelector('p');
-      if (loadingText) {
-        loadingText.innerHTML = "Waiting for you to authorize the payment in your UPI app...<br><br>Please do not close this window.";
-      }
-    }
 
     setTimeout(() => {
       loadingOverlay.classList.add('hidden');
@@ -1313,11 +1301,11 @@ function processPayment(e) {
       
       // Trigger Order Confirmation Email!
       sendOrderEmail(orderData, 'confirmation');
-    }, delayMs);
+    }, 1000);
   };
 
-  // Trigger Razorpay ONLY for Card payments
-  if (activePaymentMethod === 'card') {
+  // Trigger Razorpay for actual online payment verification
+  if (activePaymentMethod === 'card' || activePaymentMethod === 'upi') {
     // Check if Razorpay is loaded
     if (typeof Razorpay !== 'undefined') {
       var options = {

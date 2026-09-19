@@ -1368,7 +1368,7 @@ function sendOrderEmail(orderData, type) {
     // Requires setting up a Service ID and Template ID in EmailJS
     emailjs.send("service_d5w4qrw", "template_5n9hbcw", emailParams)
       .then(() => {
-        showToast(`📧 Email sent to ${orderData.customerEmail}`);
+        console.log(`Email sent successfully to ${orderData.customerEmail}`);
       })
       .catch(err => {
         console.error("EmailJS Error:", err);
@@ -1378,7 +1378,7 @@ function sendOrderEmail(orderData, type) {
     // Fallback simulation for prototype
     console.log("Simulating Email Sending:", emailParams);
     setTimeout(() => {
-      showToast(`📧 [Simulated Email] Sent to ${orderData.customerEmail}`);
+      console.log(`[Simulated Email] Sent to ${orderData.customerEmail}`);
     }, 1500);
   }
 }

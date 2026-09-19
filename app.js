@@ -1307,8 +1307,8 @@ function processPayment(e) {
     }, 1000);
   };
 
-  // Trigger Razorpay for online payments
-  if (activePaymentMethod === 'card' || activePaymentMethod === 'upi') {
+  // Trigger Razorpay ONLY for Card payments
+  if (activePaymentMethod === 'card') {
     // Check if Razorpay is loaded
     if (typeof Razorpay !== 'undefined') {
       var options = {
@@ -1347,7 +1347,7 @@ function processPayment(e) {
       alert("Razorpay is not loaded correctly. Please check your internet connection.");
     }
   } else {
-    // Cash on Delivery
+    // UPI and Cash on Delivery (Manual/Simulated flows)
     finalizeOrder();
   }
 }

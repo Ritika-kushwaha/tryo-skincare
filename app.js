@@ -1263,14 +1263,8 @@ function processPayment(e) {
   const customerEmail = state.currentUser ? state.currentUser.email : 'guest@example.com';
   const totalAmount = state.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
-  // Basic validation per method
-  if (activePaymentMethod === 'card') {
-    const num = document.getElementById('card-number').value.trim();
-    if (!num) return alert('Please fill in card details.');
-  } else if (activePaymentMethod === 'upi') {
-    const upiId = document.getElementById('upi-id').value.trim();
-    if (!upiId) return alert('Please enter a UPI ID.');
-  }
+  // We don't need local UI validation for Card/UPI because Razorpay handles its own UI and validation!
+  // The user will enter their details in the secure Razorpay popup.
 
   const finalizeOrder = () => {
     const loadingOverlay = document.getElementById('payment-loading-screen');
@@ -1344,15 +1338,6 @@ function processPayment(e) {
           alert("Payment Failed: " + response.error.description);
         });
         rzp1.open();
-        
-        // Fallback for demo purposes if key is invalid (Razorpay will close immediately)
-        // In a real app, do not do this.
-        setTimeout(() => {
-           if (!document.querySelector('.razorpay-container')) {
-             console.warn("Razorpay failed to open (likely due to missing API key). Simulating success for prototype demo.");
-             finalizeOrder();
-           }
-        }, 1500);
 
       } catch (e) {
         console.error("Razorpay Error:", e);
@@ -1380,7 +1365,7 @@ function sendOrderEmail(orderData, type) {
       : `Your order status has been updated to: ${orderData.status}.`
   };
 
-  if (typeof emailjs !== 'undefined' && emailjs._publicKey) {
+  if (typeof emailjs !== 'undefined') {
     // Requires setting up a Service ID and Template ID in EmailJS
     emailjs.send("service_d5w4qrw", "template_5n9hbcw", emailParams)
       .then(() => {
@@ -1388,7 +1373,7 @@ function sendOrderEmail(orderData, type) {
       })
       .catch(err => {
         console.error("EmailJS Error:", err);
-        showToast(`📧 [Simulated Email] Sent to ${orderData.customerEmail}`);
+        alert("EmailJS Failed: " + (err.text || err.message || JSON.stringify(err)) + "\n\nPlease check your EmailJS dashboard settings (e.g., ensure Gmail is connected).");
       });
   } else {
     // Fallback simulation for prototype

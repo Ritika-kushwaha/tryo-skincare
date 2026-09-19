@@ -279,7 +279,7 @@ document.addEventListener('DOMContentLoaded', () => {
   lucide.createIcons();
 
   const currentHash = window.location.hash.substring(1);
-  if (currentHash && ['home', 'shop', 'combo', 'scanner', 'wishlist', 'cart', 'history', 'checkout'].includes(currentHash)) {
+  if (currentHash && ['home', 'shop', 'combo', 'scanner', 'wishlist', 'cart', 'history', 'checkout', 'auth'].includes(currentHash)) {
     navigateTo(currentHash);
   }
 });
@@ -321,12 +321,12 @@ function openProfileOrLogin() {
   if (state.currentUser) {
     navigateTo('history');
   } else {
-    document.getElementById('auth-modal').classList.remove('hidden');
+    navigateTo('auth');
   }
 }
 
 function closeAuthModal() {
-  document.getElementById('auth-modal').classList.add('hidden');
+  // Deprecated: Auth is now a full-page view, no modal to close.
 }
 
 function switchAuthTab(tab) {

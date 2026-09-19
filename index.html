@@ -617,6 +617,71 @@
       </div>
     </section>
 
+    <!-- AUTH VIEW (Dedicated Login/Signup Page) -->
+    <section id="auth-view" class="view-panel">
+      <div class="auth-page-container">
+        <!-- Left Side: Beautiful Image -->
+        <div class="auth-image-side">
+          <div class="auth-image-overlay">
+            <h2>Welcome to Tryo</h2>
+            <p>Unlock personalized clinical skincare, save your AI scans, and track your orders.</p>
+          </div>
+        </div>
+        
+        <!-- Right Side: The Forms -->
+        <div class="auth-form-side">
+          <div class="auth-form-wrapper">
+            <div class="modal-tabs" style="margin-bottom: 25px;">
+              <button class="modal-tab active" id="tab-login" onclick="switchAuthTab('login')">Log In</button>
+              <button class="modal-tab" id="tab-signup" onclick="switchAuthTab('signup')">Sign Up</button>
+            </div>
+            
+            <div class="google-auth-wrapper" style="text-align: center; margin-bottom: 20px;">
+              <button type="button" class="btn btn-outline" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 600;" onclick="simulateGoogleLogin()">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google" style="width: 18px; height: 18px;">
+                Continue with Google
+              </button>
+              <div style="display: flex; align-items: center; text-align: center; color: var(--text-muted); font-size: 11px; margin-top: 20px;">
+                <hr style="flex-grow: 1; border: none; border-top: 1px solid var(--border);">
+                <span style="padding: 0 10px; text-transform: uppercase;">or use email</span>
+                <hr style="flex-grow: 1; border: none; border-top: 1px solid var(--border);">
+              </div>
+            </div>
+
+            <!-- Login Form -->
+            <form id="login-form" class="auth-form" onsubmit="handleLogin(event)">
+              <div class="form-group">
+                <label for="login-email">Email Address</label>
+                <input type="email" id="login-email" placeholder="hello@tryo.com" required>
+              </div>
+              <div class="form-group">
+                <label for="login-password">Password</label>
+                <input type="password" id="login-password" placeholder="••••••••" required>
+              </div>
+              <button type="submit" class="btn btn-primary btn-block">Enter Tryo ✨</button>
+            </form>
+
+            <!-- Signup Form -->
+            <form id="signup-form" class="auth-form hidden" onsubmit="handleSignup(event)">
+              <div class="form-group">
+                <label for="signup-name">Your Full Name</label>
+                <input type="text" id="signup-name" placeholder="Ritika Sen" required>
+              </div>
+              <div class="form-group">
+                <label for="signup-email">Email Address</label>
+                <input type="email" id="signup-email" placeholder="yourname@tryo.com" required>
+              </div>
+              <div class="form-group">
+                <label for="signup-password">Password</label>
+                <input type="password" id="signup-password" placeholder="Min. 6 characters" minlength="6" required>
+              </div>
+              <button type="submit" class="btn btn-primary btn-block">Create Account 🌸</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
   </main>
 
   <!-- PRODUCT DETAILS & REVIEWS MODAL -->
@@ -690,56 +755,6 @@
     </div>
   </div>
 
-  <!-- AUTHENTICATION MODAL -->
-  <div class="modal-backdrop hidden" id="auth-modal">
-    <div class="modal-card">
-      <button class="close-modal-btn" onclick="closeAuthModal()"><i data-lucide="x"></i></button>
-      
-      <div class="modal-tabs">
-        <button class="modal-tab active" id="tab-login" onclick="switchAuthTab('login')">Log In</button>
-      <div class="google-auth-wrapper" style="text-align: center; margin-bottom: 20px;">
-        <button type="button" class="btn btn-outline" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 600;" onclick="simulateGoogleLogin()">
-          <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google" style="width: 18px; height: 18px;">
-          Continue with Google
-        </button>
-        <div style="display: flex; align-items: center; text-align: center; color: var(--text-muted); font-size: 11px; margin-top: 20px;">
-          <hr style="flex-grow: 1; border: none; border-top: 1px solid var(--border);">
-          <span style="padding: 0 10px; text-transform: uppercase;">or use email</span>
-          <hr style="flex-grow: 1; border: none; border-top: 1px solid var(--border);">
-        </div>
-      </div>
-
-      <!-- Login Form -->
-      <form id="login-form" class="auth-form" onsubmit="handleLogin(event)">
-        <div class="form-group">
-          <label for="login-email">Email Address</label>
-          <input type="email" id="login-email" placeholder="hello@tryo.com" required>
-        </div>
-        <div class="form-group">
-          <label for="login-password">Password</label>
-          <input type="password" id="login-password" placeholder="••••••••" required>
-        </div>
-        <button type="submit" class="btn btn-primary btn-block">Enter Tryo ✨</button>
-      </form>
-
-      <!-- Signup Form -->
-      <form id="signup-form" class="auth-form hidden" onsubmit="handleSignup(event)">
-        <div class="form-group">
-          <label for="signup-name">Your Full Name</label>
-          <input type="text" id="signup-name" placeholder="Ritika Sen" required>
-        </div>
-        <div class="form-group">
-          <label for="signup-email">Email Address</label>
-          <input type="email" id="signup-email" placeholder="yourname@tryo.com" required>
-        </div>
-        <div class="form-group">
-          <label for="signup-password">Password</label>
-          <input type="password" id="signup-password" placeholder="Min. 6 characters" minlength="6" required>
-        </div>
-        <button type="submit" class="btn btn-primary btn-block">Create Account 🌸</button>
-      </form>
-    </div>
-  </div>
 
   <!-- Footer Section -->
   <footer class="app-footer-bar">

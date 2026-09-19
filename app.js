@@ -1431,7 +1431,7 @@ function renderSuccessReceipt() {
 
 // 14. WEEK-BY-WEEK CAMERA SCANNER SIMULATOR ENGINE
 let activeCategory = 'all';
-let weeklyFaceRemarks = {};
+
 function analyzeImagePixels(imgElement) {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d', { willReadFrequently: true });

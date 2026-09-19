@@ -255,11 +255,10 @@ function saveOrderEdit() {
 // Function to send Order Status Alert using EmailJS
 function sendRetailerEmail(orderData, type) {
   const emailParams = {
-    to_email: orderData.customerEmail,
-    to_name: orderData.customerName,
-    order_id: orderData.orderId,
-    order_total: orderData.total,
-    order_status: orderData.status,
+    email: orderData.customerEmail,
+    name: orderData.customerName,
+    title: `Order ${orderData.orderId} Update`,
+    time: new Date().toLocaleString(),
     message: `Your order status has been updated to: ${orderData.status}.`
   };
 

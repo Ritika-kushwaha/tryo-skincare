@@ -1355,13 +1355,12 @@ function processPayment(e) {
 // Function to send emails (Confirmation or Status Alerts) using EmailJS
 function sendOrderEmail(orderData, type) {
   const emailParams = {
-    to_email: orderData.customerEmail,
-    to_name: orderData.customerName,
-    order_id: orderData.orderId,
-    order_total: orderData.total,
-    order_status: orderData.status,
+    email: orderData.customerEmail, // Sent just in case they use {{email}}
+    name: orderData.customerName,
+    title: `Order ${orderData.orderId} Confirmed`,
+    time: new Date().toLocaleString(),
     message: type === 'confirmation' 
-      ? `Thank you for your order! Your payment method: ${orderData.paymentMethod}.`
+      ? `Thank you for your order! Your payment method: ${orderData.paymentMethod}. Total: ₹${orderData.total}.`
       : `Your order status has been updated to: ${orderData.status}.`
   };
 

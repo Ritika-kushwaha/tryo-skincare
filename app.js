@@ -1263,14 +1263,7 @@ function processPayment(e) {
   const customerEmail = state.currentUser ? state.currentUser.email : 'guest@example.com';
   const totalAmount = state.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
-  // We don't need local UI validation for Card, but we do for UPI
-  if (activePaymentMethod === 'upi') {
-    const upiId = document.getElementById('upi-id').value.trim();
-    if (!upiId) {
-      alert('Please enter your UPI ID or click one of the app buttons (PhonePe, GPay, etc) before paying.');
-      return;
-    }
-  }
+  // No local UI validation needed for prototype.
 
   const finalizeOrder = () => {
     const loadingOverlay = document.getElementById('payment-loading-screen');

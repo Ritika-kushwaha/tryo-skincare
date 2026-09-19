@@ -1341,10 +1341,10 @@ function processPayment(e) {
 
       } catch (e) {
         console.error("Razorpay Error:", e);
-        finalizeOrder(); // Fallback simulation
+        alert("Razorpay failed to initialize. Check console for details.");
       }
     } else {
-      finalizeOrder(); // Fallback simulation
+      alert("Razorpay is not loaded correctly. Please check your internet connection.");
     }
   } else {
     // Cash on Delivery

@@ -4,17 +4,9 @@
    across devices. No signup required!
    ========================================== */
 
-// Unique database ID created for Tryo Orders
-const API_URL = `/api/orders`;
-
-// FIREBASE INTEGRATION
-// To activate Firebase, paste your Firebase config here:
-const firebaseConfig = {
-  // apiKey: "YOUR_API_KEY",
-  // authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  // databaseURL: "https://YOUR_PROJECT_ID.firebaseio.com",
-  // projectId: "YOUR_PROJECT_ID",
-};
+// Firebase REST API URL
+const FIREBASE_PROJECT_ID = "tryo-c7f30";
+const API_URL = `https://${FIREBASE_PROJECT_ID}-default-rtdb.firebaseio.com/orders.json`;
 
 // Keep track of the current polling interval for live updates
 let liveUpdateInterval = null;
@@ -28,9 +20,9 @@ function cloudSaveOrder(orderData) {
 
   // 2. Push to cloud
   fetch(API_URL, {
-    method: 'POST',
+    method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(orderData)
+    body: JSON.stringify(local)
   })
   .then(() => console.log('[Tryo DB] Order saved to cloud:', orderData.orderId))
   .catch(err => console.error('[Tryo DB] Cloud save failed:', err));
@@ -41,11 +33,17 @@ function cloudLoadOrders(callback) {
   fetch(API_URL)
     .then(res => res.json())
     .then(data => {
-      let cloudOrders = data.orders || [];
+      let cloudOrders = [];
+      if (Array.isArray(data)) {
+        cloudOrders = data;
+      } else if (data && typeof data === 'object') {
+        // Just in case it's saved as an object or has data.orders (fallback)
+        cloudOrders = data.orders || Object.values(data);
+      }
       
       // Merge with local orders to prevent data loss on serverless cold starts
       const localOrders = getLocalOrders();
-      let merged = [...cloudOrders];
+      let merged = [...cloudOrders].filter(Boolean); // Filter nulls Firebase might create
       
       localOrders.forEach(localOrder => {
         if (!merged.find(o => o.orderId === localOrder.orderId)) {
@@ -63,7 +61,7 @@ function cloudLoadOrders(callback) {
         fetch(API_URL, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ orders: merged })
+          body: JSON.stringify(merged)
         }).catch(e => console.error("Sync up failed", e));
       }
 
@@ -90,7 +88,11 @@ function cloudUpdateOrder(orderId, updatedFields, callback) {
   fetch(API_URL)
     .then(res => res.json())
     .then(data => {
-      const cloudOrders = data.orders || [];
+      let cloudOrders = [];
+      if (Array.isArray(data)) cloudOrders = data;
+      else if (data && typeof data === 'object') cloudOrders = data.orders || Object.values(data);
+      cloudOrders = cloudOrders.filter(Boolean);
+
       const cloudIdx = cloudOrders.findIndex(o => o.orderId === orderId);
       
       if (cloudIdx > -1) {
@@ -99,7 +101,7 @@ function cloudUpdateOrder(orderId, updatedFields, callback) {
         return fetch(API_URL, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ orders: cloudOrders })
+          body: JSON.stringify(cloudOrders)
         }).then(() => {
           console.log('[Tryo DB] Order updated in cloud:', orderId);
           if (callback) callback(true);
@@ -128,7 +130,11 @@ function cloudListenOrders(callback) {
     fetch(API_URL)
       .then(res => res.json())
       .then(data => {
-        let cloudOrders = data.orders || [];
+        let cloudOrders = [];
+        if (Array.isArray(data)) cloudOrders = data;
+        else if (data && typeof data === 'object') cloudOrders = data.orders || Object.values(data);
+        cloudOrders = cloudOrders.filter(Boolean);
+
         const localOrders = getLocalOrders();
         let merged = [...cloudOrders];
         

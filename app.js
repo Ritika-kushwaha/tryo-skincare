@@ -1444,12 +1444,60 @@ function renderSuccessReceipt() {
 // 14. WEEK-BY-WEEK CAMERA SCANNER SIMULATOR ENGINE
 let activeCategory = 'all';
 let weeklyFaceRemarks = {};
+function analyzeImagePixels(imgElement) {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d', { willReadFrequently: true });
+  canvas.width = imgElement.naturalWidth || 300;
+  canvas.height = imgElement.naturalHeight || 300;
+  
+  if (canvas.width === 0) return { r: 150, g: 120, b: 110 };
+  
+  try {
+    ctx.drawImage(imgElement, 0, 0, canvas.width, canvas.height);
+    const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+    let rSum = 0, gSum = 0, bSum = 0;
+    let sampleCount = 0;
+    
+    // Sample every 40th pixel to calculate the actual average skin/hair tone
+    for (let i = 0; i < data.length; i += 40) {
+      rSum += data[i];
+      gSum += data[i+1];
+      bSum += data[i+2];
+      sampleCount++;
+    }
+    return { r: rSum/sampleCount, g: gSum/sampleCount, b: bSum/sampleCount };
+  } catch(e) {
+    console.warn("Canvas cross-origin taint, falling back to default.", e);
+    return { r: 150, g: 120, b: 110 };
+  }
+}
+
+let weeklyFaceRemarks = {};
 let weeklyHairRemarks = {};
 
 function generateDynamicScanResults() {
-  const baseRedness = Math.floor(Math.random() * 30) + 60; // 60-90
-  const baseMoisture = Math.floor(Math.random() * 20) + 20; // 20-40
-  const baseElasticity = Math.floor(Math.random() * 20) + 40; // 40-60
+  const imgElement = document.getElementById('fallback-img');
+  let avgColor = { r: 150, g: 120, b: 110 };
+  
+  if (imgElement && imgElement.complete) {
+    avgColor = analyzeImagePixels(imgElement);
+    console.log("AI CV Pixel Analysis Complete. RGB:", avgColor);
+  }
+
+  // Derive metrics strictly from the actual image's pixel data! (No random generation)
+  const brightness = (avgColor.r + avgColor.g + avgColor.b) / 3;
+  const rednessRatio = avgColor.r / (avgColor.r + avgColor.g + avgColor.b + 1);
+  const darkRatio = 255 - brightness;
+  
+  // Face Metrics
+  const baseRedness = Math.max(40, Math.min(95, Math.floor(rednessRatio * 200)));
+  const baseMoisture = Math.max(20, Math.min(85, Math.floor((brightness / 255) * 100))); 
+  const baseElasticity = Math.max(40, Math.min(90, Math.floor(100 - (Math.abs(avgColor.g - avgColor.b))))); 
+
+  // Hair Metrics
+  const baseDamage = Math.max(20, Math.min(90, Math.floor(rednessRatio * 150))); 
+  const baseFrizz = Math.max(10, Math.min(80, Math.floor((Math.abs(avgColor.r - avgColor.g) / 30) * 100)));
+  const baseDensity = Math.max(30, Math.min(95, Math.floor((darkRatio / 255) * 110))); 
 
   weeklyFaceRemarks = {
     1: {
@@ -1468,35 +1516,32 @@ function generateDynamicScanResults() {
       filter: "saturate(1.0) contrast(1.0) brightness(1.0)"
     },
     4: {
-      remark: "Week 4: Radiance peaks! Skin barrier completely healed and plump. Glow locked in.",
-      moisture: Math.min(99, baseMoisture + 55), redness: Math.max(2, Math.floor(baseRedness*0.1)), elasticity: Math.min(99, baseElasticity + 35),
-      filter: "brightness(1.03) saturate(1.03) contrast(1.02)"
+      remark: `Week 4: Organic cellular transformation complete. Redness fully subsided to ${Math.floor(baseRedness*0.1)}%. Perfect glow achieved!`,
+      moisture: 95, redness: Math.floor(baseRedness*0.1), elasticity: 98,
+      filter: "saturate(1.2) contrast(1.05) brightness(1.05) drop-shadow(0 0 10px rgba(255,255,255,0.4))"
     }
   };
 
-  const hairFrizz = Math.floor(Math.random() * 30) + 60;
-  const hairMoist = Math.floor(Math.random() * 20) + 30;
-
   weeklyHairRemarks = {
     1: {
-      remark: `Week 1: Scalp cuticle friction high. Frizz scale ${hairFrizz}%. Recommended routine: Bhringraj Shampoo & Rosemary Oil.`,
-      moisture: hairMoist, redness: hairFrizz, elasticity: 40,
-      filter: "saturate(0.85) contrast(0.9) sepia(0.05)"
+      remark: `Week 1: Scalp scan reveals high follicle damage (${baseDamage}%). Hair density low at ${baseDensity}%. Action needed: Bhringraj Revival Shampoo.`,
+      moisture: baseDensity, redness: baseDamage, elasticity: baseFrizz, // Using the UI's 3 stat bars (Density, Damage, Frizz mapped to Moisture, Redness, Elasticity)
+      filter: "grayscale(0.3) contrast(0.8) brightness(0.85)"
     },
     2: {
-      remark: `Week 2: Cuticle scale cohesion improving. Frizz reduced to ${Math.floor(hairFrizz*0.6)}%.`,
-      moisture: Math.floor(hairMoist + 15), redness: Math.floor(hairFrizz*0.6), elasticity: 58,
-      filter: "saturate(0.95) contrast(0.95)"
+      remark: `Week 2: Herbal nutrients penetrating shafts. Breakage reduced to ${Math.floor(baseDamage*0.6)}%. Frizz starting to smooth out.`,
+      moisture: Math.floor(baseDensity + 10), redness: Math.floor(baseDamage*0.6), elasticity: Math.floor(baseFrizz*0.7),
+      filter: "grayscale(0.1) contrast(0.9) brightness(0.95)"
     },
     3: {
-      remark: `Week 3: Frizz dramatically reduced. Structural moisture content scales up to ${Math.floor(hairMoist + 35)}%.`,
-      moisture: Math.floor(hairMoist + 35), redness: Math.floor(hairFrizz*0.3), elasticity: 74,
-      filter: "saturate(1.0) brightness(1.01)"
+      remark: `Week 3: Root strengthening visible! Hair density increases to ${Math.floor(baseDensity + 25)}%. Split ends visibly repaired.`,
+      moisture: Math.floor(baseDensity + 25), redness: Math.floor(baseDamage*0.25), elasticity: Math.floor(baseFrizz*0.3),
+      filter: "saturate(1.05) contrast(1.0) brightness(1.0)"
     },
     4: {
-      remark: "Week 4: Silk radiance peaked! Scalp sebum pH balance perfectly organic.",
-      moisture: Math.min(99, hairMoist + 55), redness: Math.max(2, Math.floor(hairFrizz*0.1)), elasticity: 92,
-      filter: "brightness(1.03) saturate(1.05)"
+      remark: `Week 4: Complete organic hair revival. Damage totally reversed to ${Math.floor(baseDamage*0.05)}%. Incredible shine and thickness!`,
+      moisture: 96, redness: Math.floor(baseDamage*0.05), elasticity: Math.floor(baseFrizz*0.1),
+      filter: "saturate(1.1) contrast(1.1) brightness(1.1) drop-shadow(0 0 12px rgba(255,255,255,0.3))"
     }
   };
 }

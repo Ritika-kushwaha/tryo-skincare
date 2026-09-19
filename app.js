@@ -1263,9 +1263,28 @@ function processPayment(e) {
   const customerEmail = state.currentUser ? state.currentUser.email : 'guest@example.com';
   const totalAmount = state.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
+  // Strict local validation for UPI (Since Razorpay UPI is disabled on merchant account)
+  if (activePaymentMethod === 'upi') {
+    const utr = document.getElementById('upi-utr').value.trim();
+    if (utr.length < 12) {
+      alert('Payment Verification Failed: Please enter the valid 12-digit Transaction ID (UTR) from your UPI app after paying.');
+      return; // Blocks the order!
+    }
+  }
+
   const finalizeOrder = () => {
     const loadingOverlay = document.getElementById('payment-loading-screen');
     loadingOverlay.classList.remove('hidden');
+
+    // Simulated verification delay for UPI
+    const delayMs = activePaymentMethod === 'upi' ? 3000 : 1000;
+
+    if (activePaymentMethod === 'upi') {
+      const loadingText = loadingOverlay.querySelector('p');
+      if (loadingText) {
+        loadingText.innerHTML = "Verifying Transaction ID with the bank...<br><br>Please wait.";
+      }
+    }
 
     setTimeout(() => {
       loadingOverlay.classList.add('hidden');
@@ -1275,7 +1294,7 @@ function processPayment(e) {
         orderId: 'TR-' + Math.floor(100000 + Math.random() * 900000),
         date: new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }),
         timestamp: Date.now(),
-        paymentMethod: activePaymentMethod === 'card' ? '💳 Card (Razorpay)' : activePaymentMethod === 'upi' ? '📱 UPI (PhonePe/GPay)' : '🏠 Cash on Delivery',
+        paymentMethod: activePaymentMethod === 'card' ? '💳 Card (Razorpay)' : activePaymentMethod === 'upi' ? '📱 UPI (Verified)' : '🏠 Cash on Delivery',
         customerName: customerName,
         customerEmail: customerEmail,
         address: `${document.getElementById('shipping-address').value.trim()}, ${document.getElementById('shipping-city').value.trim()}`,
@@ -1301,11 +1320,11 @@ function processPayment(e) {
       
       // Trigger Order Confirmation Email!
       sendOrderEmail(orderData, 'confirmation');
-    }, 1000);
+    }, delayMs);
   };
 
-  // Trigger Razorpay for actual online payment verification
-  if (activePaymentMethod === 'card' || activePaymentMethod === 'upi') {
+  // Trigger Razorpay ONLY for Card payments
+  if (activePaymentMethod === 'card') {
     // Check if Razorpay is loaded
     if (typeof Razorpay !== 'undefined') {
       var options = {

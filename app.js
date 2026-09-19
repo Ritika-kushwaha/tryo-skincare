@@ -1362,51 +1362,63 @@ function renderSuccessReceipt() {
 
 // 14. WEEK-BY-WEEK CAMERA SCANNER SIMULATOR ENGINE
 let activeCategory = 'all';
-const weeklyFaceRemarks = {
-  1: {
-    remark: "Week 1: Acne inflammation active. Redness scale 78% (High). Skin elasticity moderate. Recommended routine: Saffron Glow Face Serum + Sandalwood & Rose Hydration Mist.",
-    moisture: 42, redness: 78, elasticity: 55,
-    filter: "sepia(0.2) saturate(1.1) contrast(0.9) brightness(0.95)"
-  },
-  2: {
-    remark: "Week 2: Sebum oxidation reduced. Active dermal cells rebuilding hydration layer. Redness scales down to 48%. Skin elasticity improving.",
-    moisture: 58, redness: 48, elasticity: 62,
-    filter: "sepia(0.1) saturate(1.05) contrast(0.95) brightness(0.98)"
-  },
-  3: {
-    remark: "Week 3: Micro-scars clearing. Epidermal elasticity restored. Skin hydration peaks at 75% for a supple, organic texture. Clinical checks verify perfect safety.",
-    moisture: 75, redness: 20, elasticity: 74,
-    filter: "saturate(1.0) contrast(1.0) brightness(1.0)"
-  },
-  4: {
-    remark: "Week 4: Radiance peaks! Sebum balance optimized. Skin barrier completely healed and plump. Saffron active locks hydration for organic glow.",
-    moisture: 92, redness: 5, elasticity: 88,
-    filter: "brightness(1.03) saturate(1.03) contrast(1.02)"
-  }
-};
+let weeklyFaceRemarks = {};
+let weeklyHairRemarks = {};
 
-const weeklyHairRemarks = {
-  1: {
-    remark: "Week 1: Scalp cuticle friction high. Moisture scale 35% (Dry). Split ends visible. Recommended routine: Bhringraj & Shikakai Shampoo + Rosemary & Amla Hair Growth Oil.",
-    moisture: 35, redness: 85, elasticity: 40,
-    filter: "saturate(0.85) contrast(0.9) sepia(0.05)"
-  },
-  2: {
-    remark: "Week 2: Scalp follicle cellular scaling reduced. Cuticle scale cohesion improving. Elasticity levels rising.",
-    moisture: 52, redness: 55, elasticity: 58,
-    filter: "saturate(0.95) contrast(0.95)"
-  },
-  3: {
-    remark: "Week 3: Frizz reduced by 60%. Structural hair core moisture content scales up to 78%. Shine factor starting to bloom.",
-    moisture: 78, redness: 22, elasticity: 74,
-    filter: "saturate(1.0) brightness(1.01)"
-  },
-  4: {
-    remark: "Week 4: Silk radiance peaked! Structural locks density fully restored. Scalp sebum pH balance perfectly organic.",
-    moisture: 95, redness: 8, elasticity: 92,
-    filter: "brightness(1.03) saturate(1.05)"
-  }
-};
+function generateDynamicScanResults() {
+  const baseRedness = Math.floor(Math.random() * 30) + 60; // 60-90
+  const baseMoisture = Math.floor(Math.random() * 20) + 20; // 20-40
+  const baseElasticity = Math.floor(Math.random() * 20) + 40; // 40-60
+
+  weeklyFaceRemarks = {
+    1: {
+      remark: `Week 1: Imbalances detected. Redness scale ${baseRedness}% (High). Skin elasticity moderate. Recommended routine: Saffron Glow Face Serum.`,
+      moisture: baseMoisture, redness: baseRedness, elasticity: baseElasticity,
+      filter: "sepia(0.2) saturate(1.1) contrast(0.9) brightness(0.95)"
+    },
+    2: {
+      remark: `Week 2: Active cells rebuilding. Redness scales down to ${Math.floor(baseRedness*0.7)}%. Skin elasticity improving.`,
+      moisture: Math.floor(baseMoisture + 15), redness: Math.floor(baseRedness*0.7), elasticity: Math.floor(baseElasticity + 10),
+      filter: "sepia(0.1) saturate(1.05) contrast(0.95) brightness(0.98)"
+    },
+    3: {
+      remark: `Week 3: Epidermal elasticity restored. Skin hydration peaks at ${Math.floor(baseMoisture + 35)}% for a supple texture.`,
+      moisture: Math.floor(baseMoisture + 35), redness: Math.floor(baseRedness*0.3), elasticity: Math.floor(baseElasticity + 20),
+      filter: "saturate(1.0) contrast(1.0) brightness(1.0)"
+    },
+    4: {
+      remark: "Week 4: Radiance peaks! Skin barrier completely healed and plump. Glow locked in.",
+      moisture: Math.min(99, baseMoisture + 55), redness: Math.max(2, Math.floor(baseRedness*0.1)), elasticity: Math.min(99, baseElasticity + 35),
+      filter: "brightness(1.03) saturate(1.03) contrast(1.02)"
+    }
+  };
+
+  const hairFrizz = Math.floor(Math.random() * 30) + 60;
+  const hairMoist = Math.floor(Math.random() * 20) + 30;
+
+  weeklyHairRemarks = {
+    1: {
+      remark: `Week 1: Scalp cuticle friction high. Frizz scale ${hairFrizz}%. Recommended routine: Bhringraj Shampoo & Rosemary Oil.`,
+      moisture: hairMoist, redness: hairFrizz, elasticity: 40,
+      filter: "saturate(0.85) contrast(0.9) sepia(0.05)"
+    },
+    2: {
+      remark: `Week 2: Cuticle scale cohesion improving. Frizz reduced to ${Math.floor(hairFrizz*0.6)}%.`,
+      moisture: Math.floor(hairMoist + 15), redness: Math.floor(hairFrizz*0.6), elasticity: 58,
+      filter: "saturate(0.95) contrast(0.95)"
+    },
+    3: {
+      remark: `Week 3: Frizz dramatically reduced. Structural moisture content scales up to ${Math.floor(hairMoist + 35)}%.`,
+      moisture: Math.floor(hairMoist + 35), redness: Math.floor(hairFrizz*0.3), elasticity: 74,
+      filter: "saturate(1.0) brightness(1.01)"
+    },
+    4: {
+      remark: "Week 4: Silk radiance peaked! Scalp sebum pH balance perfectly organic.",
+      moisture: Math.min(99, hairMoist + 55), redness: Math.max(2, Math.floor(hairFrizz*0.1)), elasticity: 92,
+      filter: "brightness(1.03) saturate(1.05)"
+    }
+  };
+}
 
 function setScanMode(mode) {
   state.scanMode = mode;
@@ -1460,6 +1472,9 @@ function triggerScanningSequence() {
       currentStep++;
     }
   }, 600);
+
+  // Generate unique randomized results for this specific scan!
+  generateDynamicScanResults();
 
   setTimeout(() => {
     clearInterval(interval);

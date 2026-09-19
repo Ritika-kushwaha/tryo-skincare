@@ -1307,8 +1307,8 @@ function processPayment(e) {
     }, 1000);
   };
 
-  // Trigger Razorpay ONLY for Card payments
-  if (activePaymentMethod === 'card') {
+  // Trigger Razorpay for online payments (Card & UPI)
+  if (activePaymentMethod === 'card' || activePaymentMethod === 'upi') {
     // Check if Razorpay is loaded
     if (typeof Razorpay !== 'undefined') {
       var options = {

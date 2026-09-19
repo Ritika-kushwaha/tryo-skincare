@@ -1263,8 +1263,14 @@ function processPayment(e) {
   const customerEmail = state.currentUser ? state.currentUser.email : 'guest@example.com';
   const totalAmount = state.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
-  // We don't need local UI validation for Card/UPI because Razorpay handles its own UI and validation!
-  // The user will enter their details in the secure Razorpay popup.
+  // We don't need local UI validation for Card, but we do for UPI
+  if (activePaymentMethod === 'upi') {
+    const upiId = document.getElementById('upi-id').value.trim();
+    if (!upiId) {
+      alert('Please enter your UPI ID or click one of the app buttons (PhonePe, GPay, etc) before paying.');
+      return;
+    }
+  }
 
   const finalizeOrder = () => {
     const loadingOverlay = document.getElementById('payment-loading-screen');
@@ -1307,8 +1313,8 @@ function processPayment(e) {
     }, 1000);
   };
 
-  // Trigger Razorpay for online payments (Card & UPI)
-  if (activePaymentMethod === 'card' || activePaymentMethod === 'upi') {
+  // Trigger Razorpay ONLY for Card payments
+  if (activePaymentMethod === 'card') {
     // Check if Razorpay is loaded
     if (typeof Razorpay !== 'undefined') {
       var options = {

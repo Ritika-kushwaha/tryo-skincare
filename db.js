@@ -7,6 +7,15 @@
 // Unique database ID created for Tryo Orders
 const API_URL = `/api/orders`;
 
+// FIREBASE INTEGRATION
+// To activate Firebase, paste your Firebase config here:
+const firebaseConfig = {
+  // apiKey: "YOUR_API_KEY",
+  // authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+  // databaseURL: "https://YOUR_PROJECT_ID.firebaseio.com",
+  // projectId: "YOUR_PROJECT_ID",
+};
+
 // Keep track of the current polling interval for live updates
 let liveUpdateInterval = null;
 

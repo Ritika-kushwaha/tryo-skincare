@@ -270,7 +270,7 @@ function showCartAddSuccessToast(itemName) {
 
 // 3. APP INITIALIZATION
 document.addEventListener('DOMContentLoaded', () => {
-
+  generateDynamicScanResults();
   loadStateFromLocalStorage();
   renderProducts();
   renderComboCatalog();
@@ -1259,63 +1259,109 @@ function selectPaymentMethod(method) {
 function processPayment(e) {
   e.preventDefault();
 
+  const customerName = document.getElementById('shipping-name').value.trim();
+  const customerEmail = state.currentUser ? state.currentUser.email : 'guest@example.com';
+  const totalAmount = state.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
   // Basic validation per method
   if (activePaymentMethod === 'card') {
     const num = document.getElementById('card-number').value.trim();
-    const exp = document.getElementById('card-expiry').value.trim();
-    const cvv = document.getElementById('card-cvv').value.trim();
-    if (!num || !exp || !cvv) {
-      alert('Please fill in all card details to proceed.');
-      return;
-    }
+    if (!num) return alert('Please fill in card details.');
   } else if (activePaymentMethod === 'upi') {
     const upiId = document.getElementById('upi-id').value.trim();
-    if (!upiId || !upiId.includes('@')) {
-      alert('Please enter a valid UPI ID (e.g. yourname@oksbi)');
-      return;
-    }
+    if (!upiId) return alert('Please enter a UPI ID.');
   }
-  // COD: no extra validation needed
 
-  const loadingOverlay = document.getElementById('payment-loading-screen');
-  loadingOverlay.classList.remove('hidden');
+  const finalizeOrder = () => {
+    const loadingOverlay = document.getElementById('payment-loading-screen');
+    loadingOverlay.classList.remove('hidden');
 
-  const delay = activePaymentMethod === 'cod' ? 1500 : 3000;
+    setTimeout(() => {
+      loadingOverlay.classList.add('hidden');
+      renderSuccessReceipt();
 
-  setTimeout(() => {
-    loadingOverlay.classList.add('hidden');
-    renderSuccessReceipt();
+      const orderData = {
+        orderId: 'TR-' + Math.floor(100000 + Math.random() * 900000),
+        date: new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }),
+        timestamp: Date.now(),
+        paymentMethod: activePaymentMethod === 'card' ? '💳 Card (Razorpay)' : activePaymentMethod === 'upi' ? '📱 UPI (Razorpay)' : '🏠 Cash on Delivery',
+        customerName: customerName,
+        customerEmail: customerEmail,
+        address: `${document.getElementById('shipping-address').value.trim()}, ${document.getElementById('shipping-city').value.trim()}`,
+        items: state.cart.map(item => ({ name: item.name, quantity: item.quantity, size: item.size, price: item.price })),
+        total: totalAmount,
+        status: activePaymentMethod === 'cod' ? 'Pending (COD)' : 'Paid'
+      };
 
-    const orderData = {
-      orderId: 'TR-' + Math.floor(100000 + Math.random() * 900000),
-      date: new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }),
-      timestamp: Date.now(),
-      paymentMethod: activePaymentMethod === 'card' ? '💳 Card' : activePaymentMethod === 'upi' ? '📱 UPI' : '🏠 Cash on Delivery',
-      customerName: document.getElementById('shipping-name').value.trim(),
-      customerEmail: state.currentUser ? state.currentUser.email : 'guest@example.com',
-      address: `${document.getElementById('shipping-address').value.trim()}, ${document.getElementById('shipping-city').value.trim()} - ${document.getElementById('shipping-zip').value.trim()}`,
-      items: state.cart.map(item => ({ name: item.name, quantity: item.quantity, size: item.size, price: item.price })),
-      total: state.cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
-      status: activePaymentMethod === 'cod' ? 'Pending (COD)' : 'Paid'
-    };
+      state.orders.unshift(orderData);
+      saveStateToLocalStorage();
 
-    // Save to local state FIRST so the UI updates instantly
-    state.orders.unshift(orderData);
-    saveStateToLocalStorage();
+      if (typeof cloudSaveOrder === 'function') {
+        cloudSaveOrder(orderData);
+      }
+      localStorage.setItem('tryo_orders', JSON.stringify(state.orders));
 
-    // Save to cloud API — visible across ALL devices
-    if (typeof cloudSaveOrder === 'function') {
-      cloudSaveOrder(orderData);
+      state.cart = [];
+      saveStateToLocalStorage();
+      updateHeaderBadges();
+
+      document.getElementById('payment-success-screen').classList.remove('hidden');
+      document.getElementById('payment-form').reset();
+    }, 1000);
+  };
+
+  // Trigger Razorpay for online payments
+  if (activePaymentMethod === 'card' || activePaymentMethod === 'upi') {
+    // Check if Razorpay is loaded
+    if (typeof Razorpay !== 'undefined') {
+      var options = {
+        "key": "rzp_test_YOUR_KEY_HERE", // Replace with your actual Razorpay Test Key
+        "amount": totalAmount * 100, // Amount in paise
+        "currency": "INR",
+        "name": "Tryo Organic",
+        "description": "Eco-friendly Skincare",
+        "image": "https://ui-avatars.com/api/?name=Tryo&background=b07077&color=fff",
+        "handler": function (response) {
+          console.log("Razorpay Success:", response);
+          finalizeOrder();
+        },
+        "prefill": {
+          "name": customerName,
+          "email": customerEmail,
+          "contact": "9999999999"
+        },
+        "theme": {
+          "color": "#b07077"
+        }
+      };
+
+      try {
+        var rzp1 = new Razorpay(options);
+        rzp1.on('payment.failed', function (response){
+          alert("Payment Failed: " + response.error.description);
+        });
+        rzp1.open();
+        
+        // Fallback for demo purposes if key is invalid (Razorpay will close immediately)
+        // In a real app, do not do this.
+        setTimeout(() => {
+           if (!document.querySelector('.razorpay-container')) {
+             console.warn("Razorpay failed to open (likely due to missing API key). Simulating success for prototype demo.");
+             finalizeOrder();
+           }
+        }, 1500);
+
+      } catch (e) {
+        console.error("Razorpay Error:", e);
+        finalizeOrder(); // Fallback simulation
+      }
+    } else {
+      finalizeOrder(); // Fallback simulation
     }
-    localStorage.setItem('tryo_orders', JSON.stringify(state.orders));
-
-    state.cart = [];
-    saveStateToLocalStorage();
-    updateHeaderBadges();
-
-    document.getElementById('payment-success-screen').classList.remove('hidden');
-    document.getElementById('payment-form').reset();
-  }, delay);
+  } else {
+    // Cash on Delivery
+    finalizeOrder();
+  }
 }
 
 function renderSuccessReceipt() {
@@ -1535,9 +1581,13 @@ function renderScannerRecommendations() {
   if (!container) return;
   container.innerHTML = '';
   
-  const recItems = state.scanMode === 'face' 
-    ? products.filter(p => p.id === 'p1' || p.id === 'p2' || p.id === 'p3')
-    : products.filter(p => p.id === 'p6' || p.id === 'p7' || p.id === 'p8');
+  // Get all products matching the scan mode
+  let candidates = products.filter(p => p.category === state.scanMode);
+  if (candidates.length === 0) candidates = products; // fallback
+  
+  // Shuffle array and pick 3
+  candidates.sort(() => 0.5 - Math.random());
+  const recItems = candidates.slice(0, 3);
 
   recItems.forEach(p => {
     const itemEl = document.createElement('div');

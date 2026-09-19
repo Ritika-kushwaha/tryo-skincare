@@ -1222,6 +1222,12 @@ function renderCheckoutSummary() {
   document.getElementById('checkout-total').innerText = `₹${subtotal}`;
   document.getElementById('checkout-pay-total').innerText = subtotal;
 
+  // Generate real dynamic UPI QR code
+  const upiString = `upi://pay?pa=tryo@ybl&pn=Tryo%20Skincare&am=${subtotal}&cu=INR`;
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(upiString)}&color=b07077`;
+  const qrImage = document.getElementById('upi-qr-image');
+  if (qrImage) qrImage.src = qrUrl;
+
   // Reset to card method on each new checkout visit
   selectPaymentMethod('card');
 }
@@ -1408,8 +1414,24 @@ function setScanMode(mode) {
   document.getElementById('btn-scan-hair').classList.toggle('active', mode === 'hair');
   document.getElementById('hud-mode-text').innerText = `MODE: ${mode.toUpperCase()}`;
 
+  // Reset custom image on mode switch
+  state.customUploadedImage = null;
   const fallbackImg = document.getElementById('fallback-img');
   fallbackImg.src = mode === 'face' ? 'assets/scan_face.jpg' : 'assets/scan_hair.jpg';
+}
+
+function handlePhotoUpload(event) {
+  const file = event.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      state.customUploadedImage = e.target.result;
+      document.getElementById('fallback-img').src = e.target.result;
+      // Also stop webcam if active
+      if (state.isRealCamActive) toggleRealCamera();
+    };
+    reader.readAsDataURL(file);
+  }
 }
 
 function triggerScanningSequence() {
@@ -1466,7 +1488,7 @@ function changeEvolutionWeek(week) {
   document.getElementById('remark-text-content').innerText = data.remark;
 
   const evoImg = document.getElementById('evolution-img');
-  evoImg.src = mode === 'face' ? 'assets/scan_face.jpg' : 'assets/scan_hair.jpg';
+  evoImg.src = state.customUploadedImage || (mode === 'face' ? 'assets/scan_face.jpg' : 'assets/scan_hair.jpg');
   evoImg.style.filter = data.filter;
 
   const glowOverlay = document.getElementById('evolution-glow');

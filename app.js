@@ -348,88 +348,76 @@ function switchAuthTab(tab) {
   }
 }
 
-function handleLogin(e) {
+window.handleFirebaseUser = function(user) {
+  if (user) {
+    const name = user.displayName || user.email.split('@')[0];
+    const firstName = name.split(' ')[0];
+    state.currentUser = {
+      name: capitalize(firstName),
+      email: user.email,
+      fullName: name,
+      picture: user.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random`
+    };
+    saveStateToLocalStorage();
+    updateUserUI();
+    closeAuthModal();
+  } else {
+    if (state.currentUser) {
+      state.currentUser = null;
+      state.orders = [];
+      state.wishlist = [];
+      state.cart = [];
+      saveStateToLocalStorage();
+      updateUserUI();
+      updateHeaderBadges();
+    }
+  }
+};
+
+async function handleLogin(e) {
   e.preventDefault();
   const email = document.getElementById('login-email').value.trim().toLowerCase();
   const password = document.getElementById('login-password').value;
   
-  const users = JSON.parse(localStorage.getItem('tryo_all_users') || '[]');
-  const user = users.find(u => u.email === email && u.password === password);
+  const btn = e.target.querySelector('button');
+  btn.innerHTML = '<i data-lucide="loader" class="spin"></i> Logging in...';
   
-  if (!user) {
-    alert('Incorrect email or password. Please try again or switch to Sign Up.');
-    return;
+  try {
+    await window.fbLogin(email, password);
+    navigateTo('history');
+  } catch (err) {
+    btn.innerHTML = 'Enter Tryo ✨';
   }
-  
-  state.currentUser = { name: capitalize(user.name.split(' ')[0]), email: user.email, fullName: user.name };
-  saveStateToLocalStorage();
-  updateUserUI();
-  closeAuthModal();
-  navigateTo('history');
 }
 
-function handleSignup(e) {
+async function handleSignup(e) {
   e.preventDefault();
   const name = document.getElementById('signup-name').value.trim();
   const email = document.getElementById('signup-email').value.trim().toLowerCase();
   const password = document.getElementById('signup-password').value;
   
-  const users = JSON.parse(localStorage.getItem('tryo_all_users') || '[]');
-  if (users.find(u => u.email === email)) {
-    alert('An account with this email already exists. Please Log In.');
-    return;
+  const btn = e.target.querySelector('button');
+  btn.innerHTML = '<i data-lucide="loader" class="spin"></i> Creating...';
+  
+  try {
+    await window.fbSignup(email, password, name);
+    navigateTo('shop');
+  } catch (err) {
+    btn.innerHTML = 'Create Account ✨';
   }
-  
-  users.push({ name, email, password });
-  localStorage.setItem('tryo_all_users', JSON.stringify(users));
-  
-  state.currentUser = { name: capitalize(name.split(' ')[0]), email, fullName: name };
-  saveStateToLocalStorage();
-  updateUserUI();
-  closeAuthModal();
-  navigateTo('shop');
 }
 
-function simulateGoogleLogin() {
-  const name = prompt("Google Sign-In Simulation\n\nEnter your Full Name:");
-  if (!name) return;
-  
-  let email = prompt("Enter your Gmail Address:");
-  if (!email) return;
-  email = email.trim().toLowerCase();
-  
-  if (!email.includes('@')) {
-    email = email + '@gmail.com';
+async function simulateGoogleLogin() {
+  try {
+    await window.fbLoginWithGoogle();
+    navigateTo('shop');
+  } catch (err) {
+    console.error("Google Auth Failed", err);
   }
-  
-  const users = JSON.parse(localStorage.getItem('tryo_all_users') || '[]');
-  if (!users.find(u => u.email === email)) {
-    users.push({ name: name, email: email, password: 'google_oauth_user' });
-    localStorage.setItem('tryo_all_users', JSON.stringify(users));
-  }
-  
-  const firstName = name.split(' ')[0];
-  state.currentUser = { 
-    name: capitalize(firstName), 
-    email: email, 
-    fullName: name, 
-    picture: `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=random` 
-  };
-  
-  saveStateToLocalStorage();
-  updateUserUI();
-  closeAuthModal();
-  navigateTo('shop');
 }
 
 function userLogout() {
-  state.currentUser = null;
-  state.orders = [];
-  state.wishlist = [];
-  state.cart = [];
-  saveStateToLocalStorage();
-  updateUserUI();
-  updateHeaderBadges();
+  window.fbLogout();
   navigateTo('home');
 }
 

@@ -772,6 +772,63 @@
       emailjs.init({ publicKey: "j6UbbGaexJGEmPokg" });
     })();
   </script>
+  <!-- Firebase Authentication SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDUi4Ahq8hKwcLg79kx55DWjxINQ-RVZDE",
+      authDomain: "tryo-c7f30.firebaseapp.com",
+      projectId: "tryo-c7f30",
+      storageBucket: "tryo-c7f30.firebasestorage.app",
+      messagingSenderId: "44435606379",
+      appId: "1:44435606379:web:aebd900ae4bb4421e3da2e"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+
+    window.fbLoginWithGoogle = async () => {
+      try {
+        const result = await signInWithPopup(auth, provider);
+        return result.user;
+      } catch(e) { 
+        alert("Firebase Auth Error: " + e.message); 
+        throw e; 
+      }
+    };
+
+    window.fbSignup = async (email, pass, name) => {
+      try {
+        const result = await createUserWithEmailAndPassword(auth, email, pass);
+        await updateProfile(result.user, { displayName: name });
+        return result.user;
+      } catch(e) { 
+        alert("Firebase Auth Error: " + e.message); 
+        throw e; 
+      }
+    };
+
+    window.fbLogin = async (email, pass) => {
+      try {
+        const result = await signInWithEmailAndPassword(auth, email, pass);
+        return result.user;
+      } catch(e) { 
+        alert("Firebase Auth Error: " + e.message); 
+        throw e; 
+      }
+    };
+
+    window.fbLogout = () => signOut(auth);
+
+    onAuthStateChanged(auth, (user) => {
+      if (window.handleFirebaseUser) {
+        window.handleFirebaseUser(user);
+      }
+    });
+  </script>
 
   <!-- Tryo Cloud DB Layer -->
   <script src="db.js"></script>

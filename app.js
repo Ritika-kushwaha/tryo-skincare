@@ -1223,7 +1223,7 @@ function renderCheckoutSummary() {
   document.getElementById('checkout-pay-total').innerText = subtotal;
 
   // Generate real dynamic UPI QR code
-  const upiString = `upi://pay?pa=tryo@ybl&pn=Tryo%20Skincare&am=${subtotal}&cu=INR`;
+  const upiString = `upi://pay?pa=ritikakushwaha62@oksbi&pn=Tryo%20Organic&am=${subtotal}&cu=INR`;
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(upiString)}&color=b07077`;
   const qrImage = document.getElementById('upi-qr-image');
   if (qrImage) qrImage.src = qrUrl;

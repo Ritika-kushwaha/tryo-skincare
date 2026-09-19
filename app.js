@@ -1463,7 +1463,7 @@ function analyzeImagePixels(imgElement) {
 let weeklyFaceRemarks = {};
 let weeklyHairRemarks = {};
 
-function generateDynamicScanResults() {
+async function generateDynamicScanResults() {
   const imgElement = document.getElementById('fallback-img');
   let avgColor = { r: 150, g: 120, b: 110 };
   
@@ -1487,9 +1487,44 @@ function generateDynamicScanResults() {
   const baseFrizz = Math.max(10, Math.min(80, Math.floor((Math.abs(avgColor.r - avgColor.g) / 30) * 100)));
   const baseDensity = Math.max(30, Math.min(95, Math.floor((darkRatio / 255) * 110))); 
 
+  let faceRec = `Week 1: Imbalances detected. Redness scale ${baseRedness}% (High). Skin elasticity moderate. Recommended routine: Saffron Glow Face Serum.`;
+  let hairRec = `Week 1: Scalp scan reveals high follicle damage (${baseDamage}%). Hair density low at ${baseDensity}%. Action needed: Bhringraj Revival Shampoo.`;
+
+  const apiKeyInput = document.getElementById('gemini-api-key');
+  const apiKey = apiKeyInput ? apiKeyInput.value.trim() : '';
+
+  if (apiKey) {
+    try {
+      const mode = state.scanMode || 'face';
+      let promptText = "";
+      if (mode === 'face') {
+        promptText = `You are a clinical skincare expert. The user's face scan shows Redness: ${baseRedness}%, Moisture: ${baseMoisture}%, Elasticity: ${baseElasticity}%. In exactly 1 short sentence, recommend a specific organic Indian herb treatment for their exact condition.`;
+      } else {
+        promptText = `You are a clinical haircare expert. The user's hair scan shows Damage: ${baseDamage}%, Frizz: ${baseFrizz}%, Density: ${baseDensity}%. In exactly 1 short sentence, recommend a specific organic Indian herb treatment for their exact condition.`;
+      }
+
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ parts: [{ text: promptText }] }] })
+      });
+      
+      const data = await response.json();
+      if (data.candidates && data.candidates[0]) {
+        const aiText = "✨ AI Expert: " + data.candidates[0].content.parts[0].text.replace(/\n/g, ' ');
+        if (mode === 'face') faceRec = aiText;
+        if (mode === 'hair') hairRec = aiText;
+      } else if (data.error) {
+        console.error("Gemini API Error:", data.error.message);
+      }
+    } catch(e) {
+      console.error("Failed to fetch Gemini API:", e);
+    }
+  }
+
   weeklyFaceRemarks = {
     1: {
-      remark: `Week 1: Imbalances detected. Redness scale ${baseRedness}% (High). Skin elasticity moderate. Recommended routine: Saffron Glow Face Serum.`,
+      remark: faceRec,
       moisture: baseMoisture, redness: baseRedness, elasticity: baseElasticity,
       filter: "sepia(0.2) saturate(1.1) contrast(0.9) brightness(0.95)"
     },
@@ -1512,7 +1547,7 @@ function generateDynamicScanResults() {
 
   weeklyHairRemarks = {
     1: {
-      remark: `Week 1: Scalp scan reveals high follicle damage (${baseDamage}%). Hair density low at ${baseDensity}%. Action needed: Bhringraj Revival Shampoo.`,
+      remark: hairRec,
       moisture: baseDensity, redness: baseDamage, elasticity: baseFrizz, // Using the UI's 3 stat bars (Density, Damage, Frizz mapped to Moisture, Redness, Elasticity)
       filter: "grayscale(0.3) contrast(0.8) brightness(0.85)"
     },
@@ -1560,7 +1595,7 @@ function handlePhotoUpload(event) {
   }
 }
 
-function triggerScanningSequence() {
+async function triggerScanningSequence() {
   const streamContainer = document.querySelector('.scanner-stream-container');
   const progressBox = document.getElementById('scan-progress-box');
   const statusText = document.getElementById('hud-status-text');
@@ -1576,7 +1611,7 @@ function triggerScanningSequence() {
     "Scanning hydration sensors...",
     "Verifying scalp follicles...",
     "Calibrating organic clinical data...",
-    "Finalizing bio-mapping ledger..."
+    "Generating AI Recommendations..."
   ];
 
   let currentStep = 0;
@@ -1587,24 +1622,23 @@ function triggerScanningSequence() {
     }
   }, 600);
 
-  // Generate unique randomized results for this specific scan!
-  generateDynamicScanResults();
+  // Run CV and Gemini API concurrently with the visual delay
+  const minWait = new Promise(resolve => setTimeout(resolve, 3500));
+  await Promise.all([generateDynamicScanResults(), minWait]);
 
-  setTimeout(() => {
-    clearInterval(interval);
-    streamContainer.classList.remove('scanning');
-    progressBox.classList.add('hidden');
-    statusText.innerText = 'SYS_LOCKED';
+  clearInterval(interval);
+  streamContainer.classList.remove('scanning');
+  progressBox.classList.add('hidden');
+  statusText.innerText = 'SYS_LOCKED';
 
-    emptyState.classList.add('hidden');
-    resultsBox.classList.remove('hidden');
+  emptyState.classList.add('hidden');
+  resultsBox.classList.remove('hidden');
 
-    state.scanResult = { mode: state.scanMode, scanned: true };
-    
-    evolutionWeek = 1;
-    document.getElementById('week-range-slider').value = 1;
-    changeEvolutionWeek(1);
-  }, 3500);
+  state.scanResult = { mode: state.scanMode, scanned: true };
+  
+  evolutionWeek = 1;
+  document.getElementById('week-range-slider').value = 1;
+  changeEvolutionWeek(1);
 }
 
 function changeEvolutionWeek(week) {
